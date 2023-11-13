@@ -1,0 +1,807 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>PDEP-8: In-place methods in pandas &#8212; Pandas Enhancement Proposals  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=362ab14a" />
+    <link rel="stylesheet" type="text/css" href="_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="_static/pandas.css?v=cd9ee792" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=365ca57ee442770a23c6" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=365ca57ee442770a23c6" />
+  <script src="_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=365ca57ee442770a23c6"></script>
+
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/design-tabs.js?v=36754332"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '0008-inplace-methods-in-pandas';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+<header>
+  <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+  <div class="container">
+  <a class="navbar-brand" href="../."><img alt="" src="../static/img/pandas_white.svg"></a>
+  <div class="navbar-collapse collapse" id="nav-content">
+    <ul class="navbar-nav ms-auto">
+      <li class="nav-item">
+          <a class="nav-link" href="../about/roadmap.html">Back to the PDEP index</a>
+      </li>
+    </ul>
+  </div>
+  </div>
+  </nav>
+  </header>
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          <div class="navbar-item"><nav class="navbar-nav">
+  <p class="sidebar-header-items__title"
+     role="heading"
+     aria-level="1"
+     aria-label="Site Navigation">
+    Site Navigation
+  </p>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="0001-purpose-and-guidelines.html">
+                        PDEP-1: Purpose and guidelines
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="0004-consistent-to-datetime-parsing.html">
+                        PDEP-4: Consistent datetime parsing
+                      </a>
+                    </li>
+                
+  </ul>
+</nav></div>
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">PDEP-8:...</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="pdep-8-in-place-methods-in-pandas">
+<h1>PDEP-8: In-place methods in pandas<a class="headerlink" href="#pdep-8-in-place-methods-in-pandas" title="Link to this heading">#</a></h1>
+<ul class="simple">
+<li><p>Created: 16 February 2023</p></li>
+<li><p>Status: Under discussion</p></li>
+<li><p>Discussion: <a class="reference external" href="https://github.com/pandas-dev/pandas/pull/51466">PR 51466</a></p></li>
+<li><p>Authors: <a class="reference external" href="https://github.com/lithomas1">Thomas Li</a>,
+<a class="reference external" href="https://github.com/phofl">Patrick Hoefler</a>,
+<a class="reference external" href="https://github.com/jorisvandenbossche">Joris Van den Bossche</a></p></li>
+<li><p>Revision: 1</p></li>
+</ul>
+<section id="abstract">
+<h2>Abstract<a class="headerlink" href="#abstract" title="Link to this heading">#</a></h2>
+<p>This PDEP proposes that:</p>
+<ul class="simple">
+<li><p>The <code class="docutils literal notranslate"><span class="pre">inplace</span></code> parameter will be removed from any method which can never update the
+underlying values of a pandas object inplace or which alters the shape of the object,
+and where the <code class="docutils literal notranslate"><span class="pre">inplace=True</span></code> option is only syntactic sugar for reassigning the result
+to the calling DataFrame/Series.</p></li>
+<li><p>As a consequence, the <code class="docutils literal notranslate"><span class="pre">inplace</span></code> parameter is only kept for those methods that can
+modify the underlying values of a pandas object inplace, such as <code class="docutils literal notranslate"><span class="pre">fillna</span></code> or <code class="docutils literal notranslate"><span class="pre">replace</span></code>.</p></li>
+<li><p>With the introduction of Copy-on-Write (PDEP-7<a class="footnote-reference brackets" href="#id9" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>), users don’t need the <code class="docutils literal notranslate"><span class="pre">inplace</span></code>
+keyword to avoid a copy of the data.</p></li>
+<li><p>For those methods that will keep the <code class="docutils literal notranslate"><span class="pre">inplace=True</span></code> option:</p>
+<ul>
+<li><p>the method will do an attempt to do the operation inplace but still silently copy
+when needed (for Copy-on-Write), i.e. there is no guarantee it is actually done inplace.</p></li>
+<li><p>the method will return the calling object (<code class="docutils literal notranslate"><span class="pre">self</span></code>), instead of the current <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="motivation-and-scope">
+<h2>Motivation and Scope<a class="headerlink" href="#motivation-and-scope" title="Link to this heading">#</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">inplace=True</span></code> keyword has been a controversial topic for many years. It is generally seen (at least by several
+pandas maintainers and educators) as bad practice and often unnecessary, but at the same time it is also widely used,
+partly because of confusion around the impact of the keyword.</p>
+<p>Generally, we assume that people use the keyword for the following reasons:</p>
+<ol class="arabic simple">
+<li><p>Because they think it is more efficient (it is faster and/or can save memory)</p></li>
+<li><p>To save the result to the same variable / update the original variable (avoid the pattern of reassigning to the same
+variable name)</p></li>
+</ol>
+<p>For the first reason: efficiency is an important aspect. However, in practice it is not always the case
+that <code class="docutils literal notranslate"><span class="pre">inplace=True</span></code> improves anything. Some of the methods with an <code class="docutils literal notranslate"><span class="pre">inplace</span></code> keyword can actually work inplace, but
+others still make a copy under the hood anyway. In addition, with the introduction of Copy-on-Write (PDEP-7<a class="footnote-reference brackets" href="#id9" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>), there are now other
+ways to avoid making unnecessary copies by default (without needing to specify a keyword). The next section gives a
+detailed overview of those different cases.</p>
+<p>For the second reason: we are convinced that this is not worth it. While it might save some keystrokes (if you have a
+long variable name), this code style also has sufficient disadvantages that we think it is not worth providing “two
+ways” to achieve the same result:</p>
+<ul class="simple">
+<li><p>You can’t use method chaining with <code class="docutils literal notranslate"><span class="pre">inplace=True</span></code></p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">inplace</span></code> keyword complicates type annotations (because the return value depends on the value of <code class="docutils literal notranslate"><span class="pre">inplace</span></code>)</p></li>
+<li><p>Using <code class="docutils literal notranslate"><span class="pre">inplace=True</span></code> gives code that mutates the state of an object and thus has side-effects. That can introduce
+subtle bugs and is harder to debug.</p></li>
+</ul>
+<p>Finally, there are also methods that have a <code class="docutils literal notranslate"><span class="pre">copy</span></code> keyword instead of an <code class="docutils literal notranslate"><span class="pre">inplace</span></code> keyword (which also avoids copying
+the data when <code class="docutils literal notranslate"><span class="pre">copy=False</span></code>, but returns a new object referencing the same data instead of updating the calling object),
+adding to the inconsistencies. This keyword is also redundant now with the introduction of Copy-on-Write.</p>
+<p>Given the above reasons, we are convinced that there is no need for neither the <code class="docutils literal notranslate"><span class="pre">inplace</span></code> nor the <code class="docutils literal notranslate"><span class="pre">copy</span></code> keyword, except
+for a small subset of methods that can actually update data inplace. Removing those keywords will give a more
+consistent and less confusing API. Removing the <code class="docutils literal notranslate"><span class="pre">copy</span></code> keyword is covered by PDEP-7 about Copy-on-Write,
+and this PDEP will focus on the <code class="docutils literal notranslate"><span class="pre">inplace</span></code> keyword.</p>
+<p>Thus, in this PDEP, we aim to standardize behavior across methods to make control of inplace-ness of methods
+consistent, and compatible with Copy-on-Write.</p>
+<p>Note: there are also operations (not methods) that work inplace in pandas, such as indexing (
+e.g. <code class="docutils literal notranslate"><span class="pre">df.loc[0,</span> <span class="pre">&quot;col&quot;]</span> <span class="pre">=</span> <span class="pre">val</span></code>) or inplace operators (e.g. <code class="docutils literal notranslate"><span class="pre">df</span> <span class="pre">+=</span> <span class="pre">1</span></code>). This is out of scope for this PDEP, as we focus on
+the inplace behaviour of DataFrame and Series <em>methods</em>.</p>
+</section>
+<section id="detailed-description">
+<h2>Detailed description<a class="headerlink" href="#detailed-description" title="Link to this heading">#</a></h2>
+<section id="status-quo">
+<h3>Status Quo<a class="headerlink" href="#status-quo" title="Link to this heading">#</a></h3>
+<p>Many methods in pandas currently have the ability to perform an operation inplace. For example, some methods such
+as <code class="docutils literal notranslate"><span class="pre">DataFrame.insert</span></code> only support inplace operations, while other methods use the <code class="docutils literal notranslate"><span class="pre">inplace</span></code> keyword to control
+whether an operation is done inplace or not.</p>
+<p>While we generally speak about “inplace” operations, this term is used in various context. Broadly speaking,
+for this PDEP, we can distinguish two kinds of “inplace” operations:</p>
+<ul>
+<li><p><strong>“values-inplace”</strong>: an operation that updates the underlying values of a Series or DataFrame columns inplace
+(without making a copy of the array).</p>
+<p>As illustration, an example of such a values-inplace operation without using a method:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># if the dtype is compatible, this setitem operation updates the underlying array inplace</span>
+<span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;col&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>“object-inplace”</strong>: an operation that updates a pandas DataFrame or Series <em>object</em> inplace, but without
+updating existing column values inplace.</p>
+<p>As illustration, an example of such an object-inplace operation without using a method:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># we replace the Index on `df` inplace, but without actually</span>
+<span class="c1"># updating any existing array</span>
+<span class="n">df</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="c1"># we update the DataFrame inplace, but by completely replacing a column,</span>
+<span class="c1"># not by mutating the existing column&#39;s underlying array</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">&quot;col&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_values</span>
+</pre></div>
+</div>
+<p>Object-inplace operations, while not actually modifying existing column values, keep
+(a subset of) those columns and thus can avoid copying the data of those existing columns.</p>
+</li>
+</ul>
+<p>In addition, several methods supporting the <code class="docutils literal notranslate"><span class="pre">inplace</span></code> keyword cannot actually be done inplace (in neither meaning)
+because they make a copy as a
+consequence of the operations they perform, regardless of whether <code class="docutils literal notranslate"><span class="pre">inplace</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code> or not. This, coupled with the
+fact that the <code class="docutils literal notranslate"><span class="pre">inplace=True</span></code> changes the return type of a method from a pandas object to <code class="docutils literal notranslate"><span class="pre">None</span></code>, makes usage of
+the <code class="docutils literal notranslate"><span class="pre">inplace</span></code> keyword confusing and non-intuitive.</p>
+<p>To summarize the status quo of inplace behavior of methods, we have divided methods that can operate inplace or have
+an <code class="docutils literal notranslate"><span class="pre">inplace</span></code> keyword into 4 groups:</p>
+<p><strong>Group 1: Methods that always operate inplace (no user-control with <code class="docutils literal notranslate"><span class="pre">inplace</span></code> keyword)</strong></p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head text-left"><p>Method Name</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">insert</span></code></p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">pop</span></code></p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">update</span></code></p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">isetitem</span></code></p></td>
+</tr>
+</tbody>
+</table>
+<p>This group encompasses both kinds of inplace: <code class="docutils literal notranslate"><span class="pre">update</span></code> can be values-inplace, while the others are object-inplace
+(for example, although <code class="docutils literal notranslate"><span class="pre">isetitem</span></code> operates on the original pandas object inplace,
+it will not change any existing values inplace; rather it will remove the values of the column being set, and insert new values).</p>
+<p><strong>Group 2: Methods that can modify the underlying data of the DataFrame/Series object (“values-inplace”)</strong></p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head text-left"><p>Method Name</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">where</span></code></p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">fillna</span></code></p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">replace</span></code></p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">mask</span></code></p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">interpolate</span></code></p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">ffill</span></code></p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">bfill</span></code></p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">clip</span></code></p></td>
+</tr>
+</tbody>
+</table>
+<p>These methods don’t operate inplace by default, but can be done inplace with <code class="docutils literal notranslate"><span class="pre">inplace=True</span></code> <em>if</em> the dtypes are compatible
+(e.g. the values replacing the old values can be stored in the original array without an astype). All those methods leave
+the structure of the DataFrame or Series intact (shape, row/column labels), but can mutate some elements of the data of
+the DataFrame or Series.</p>
+<p><strong>Group 3: Methods that can modify the DataFrame/Series object, but not the pre-existing values (“object-inplace”)</strong></p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head text-left"><p>Method Name</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">drop</span></code> (dropping columns)</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">rename</span></code></p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">rename_axis</span></code></p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">reset_index</span></code></p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">set_index</span></code></p></td>
+</tr>
+</tbody>
+</table>
+<p>These methods can change the structure of the DataFrame or Series, such as changing the shape by adding or removing
+columns, or changing the row/column labels (changing the index/columns attributes), but don’t modify the existing
+underlying column data of the object.</p>
+<p>All those methods make a copy of the full data by default, but can be performed object-inplace with
+avoiding copying all data (currently enabled with specifying <code class="docutils literal notranslate"><span class="pre">inplace=True</span></code>).</p>
+<p>Note: there are also methods that have a <code class="docutils literal notranslate"><span class="pre">copy</span></code> keyword instead of an <code class="docutils literal notranslate"><span class="pre">inplace</span></code> keyword (e.g. <code class="docutils literal notranslate"><span class="pre">set_axis</span></code>). This serves
+a similar purpose (avoid copying all data), but those methods don’t update the original object inplace and instead
+return a new object referencing the same data.</p>
+<p><strong>Group 4: Methods that can never operate inplace</strong></p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head text-left"><p>Method Name</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">drop</span></code> (dropping rows)</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">dropna</span></code></p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">drop_duplicates</span></code></p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">sort_values</span></code></p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">sort_index</span></code></p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">eval</span></code></p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">query</span></code></p></td>
+</tr>
+</tbody>
+</table>
+<p>Although these methods have the <code class="docutils literal notranslate"><span class="pre">inplace</span></code> keyword, they can never operate inplace, in neither meaning, because the nature of the
+operation requires copying (such as reordering or dropping rows). For those methods, <code class="docutils literal notranslate"><span class="pre">inplace=True</span></code> is essentially just
+syntactic sugar for reassigning the new result to the calling DataFrame/Series.</p>
+<p>Note: in the case of a “no-op” (for example when sorting an already sorted DataFrame), some of those methods might not
+need to perform a copy and could be considered as “object-inplace” in that case.
+This currently happens with Copy-on-Write (regardless of <code class="docutils literal notranslate"><span class="pre">inplace</span></code>), but this is considered an
+implementation detail for the purpose of this PDEP.</p>
+</section>
+<section id="proposed-changes-and-reasoning">
+<h3>Proposed changes and reasoning<a class="headerlink" href="#proposed-changes-and-reasoning" title="Link to this heading">#</a></h3>
+<p>The methods from <strong>group 1 (always inplace, no keyword)</strong> won’t change behavior, and will remain always inplace.</p>
+<p>For methods from <strong>group 4 (never inplace)</strong>, the <code class="docutils literal notranslate"><span class="pre">inplace</span></code> keyword has no actual effect
+(except for reassigning to the calling variable) and is effectively syntactic sugar for
+manually reassigning. For this group, we propose to remove the <code class="docutils literal notranslate"><span class="pre">inplace</span></code> keyword.</p>
+<p>For methods from <strong>group 3 (object-inplace)</strong>, the <code class="docutils literal notranslate"><span class="pre">inplace=True</span></code> keyword can currently be
+used to avoid a copy. However, with the introduction of Copy-on-Write, every operation
+will potentially return a shallow copy of the input object by default (if the performed
+operation does not require a copy of the data). This future default is therefore
+equivalent to the behavior with <code class="docutils literal notranslate"><span class="pre">inplace=True</span></code> for those methods (minus the return
+value).</p>
+<p>For the above reasoning, we think there is no benefit of keeping the keyword around for
+these methods. To emulate behavior of the <code class="docutils literal notranslate"><span class="pre">inplace</span></code> keyword, we can reassign the result
+of an operation to the same variable:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;foo&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]})</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+<span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">...</span>
+</pre></div>
+</div>
+<p>All references to the original object will go out of scope when the result of the <code class="docutils literal notranslate"><span class="pre">reset_index</span></code> operation is reassigned
+to <code class="docutils literal notranslate"><span class="pre">df</span></code>. As a consequence, <code class="docutils literal notranslate"><span class="pre">iloc</span></code> will continue to operate inplace, and the underlying data will not be copied (with Copy-on-Write).</p>
+<p><strong>Group 2 (values-inplace)</strong> methods differ, though, since they modify the underlying
+data, and therefore can be actually happen inplace:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;foo&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]})</span>
+<span class="n">df</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">to_replace</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Currently, the above updates <code class="docutils literal notranslate"><span class="pre">df</span></code> values-inplace, without requiring a copy of the data.
+For this type of method, however, we can <em>not</em> emulate the above usage of <code class="docutils literal notranslate"><span class="pre">inplace</span></code> by
+reassigning:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;foo&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]})</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">to_replace</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If we follow the rules of Copy-on-Write<a class="footnote-reference brackets" href="#id9" id="id3" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a> where “any subset or returned
+series/dataframe always behaves as a copy of the original, and thus never modifies the
+original”, then there is no way of doing this operation inplace by default, because the
+original object <code class="docutils literal notranslate"><span class="pre">df</span></code> would be modified before the reference goes out of scope (pandas
+does not know whether you will reassign it to <code class="docutils literal notranslate"><span class="pre">df</span></code> or assign it to another variable).
+That would violate the Copy-on-Write rules, and therefore the <code class="docutils literal notranslate"><span class="pre">replace()</span></code> method in the
+example always needs to make a copy of the underlying data by default</p>
+<p>For this case, an <code class="docutils literal notranslate"><span class="pre">inplace=True</span></code> option can have an actual benefit, i.e. allowing to
+avoid a data copy. Therefore, we propose to keep the <code class="docutils literal notranslate"><span class="pre">inplace</span></code> argument for this
+group of methods.</p>
+<p>Summarizing for the <code class="docutils literal notranslate"><span class="pre">inplace</span></code> keyword, we propose to:</p>
+<ul class="simple">
+<li><p>Keep the <code class="docutils literal notranslate"><span class="pre">inplace</span></code> keyword for this subset of methods (group 2) that can update the
+underlying values inplace (“values-inplace”)</p></li>
+<li><p>Remove the <code class="docutils literal notranslate"><span class="pre">inplace</span></code> keyword from all other methods that either can never work inplace
+(group 4) or only update the object (group 3, “object-inplace”, which can be emulated
+with reassigning).</p></li>
+</ul>
+</section>
+<section id="other-design-questions">
+<h3>Other design questions<a class="headerlink" href="#other-design-questions" title="Link to this heading">#</a></h3>
+<section id="with-inplace-true-should-we-silently-copy-or-raise-an-error-if-the-data-has-references">
+<h4>With <code class="docutils literal notranslate"><span class="pre">inplace=True</span></code>, should we silently copy or raise an error if the data has references?<a class="headerlink" href="#with-inplace-true-should-we-silently-copy-or-raise-an-error-if-the-data-has-references" title="Link to this heading">#</a></h4>
+<p>For those methods where we would keep the <code class="docutils literal notranslate"><span class="pre">inplace=True</span></code> option (group 2), there is a complication that actually operating inplace
+is not always possible.</p>
+<p>For example,</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;foo&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]})</span>
+<span class="n">df</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">to_replace</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>can be performed inplace.</p>
+<p>This is only true if <code class="docutils literal notranslate"><span class="pre">df</span></code> does not share the values it stores with another pandas object. For example, the following
+operations</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;foo&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]})</span>
+<span class="n">view</span> <span class="o">=</span> <span class="n">df</span><span class="p">[:]</span>
+<span class="c1"># We can&#39;t operate inplace, because view would also be modified!</span>
+<span class="n">df</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">to_replace</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>would be incompatible with the Copy-on-Write rules when actually done inplace. In this case we can either</p>
+<ul class="simple">
+<li><p>copy the shared values before performing the operation to avoid modifying another object (i.e. follow the standard
+Copy-on-Write procedure),</p></li>
+<li><p>raise an error to indicate that more than one object would be changed and the inplace operation is not possible.</p></li>
+</ul>
+<p>Raising an error here is problematic since oftentimes users do not have control over whether a method would cause a “
+lazy copy” to be triggered under Copy-on-Write. It is also hard to fix, adding a <code class="docutils literal notranslate"><span class="pre">copy()</span></code> before calling a method
+with <code class="docutils literal notranslate"><span class="pre">inplace=True</span></code> might actually be worse than triggering the copy under the hood. We would only copy columns that
+share data with another object, not the whole object like <code class="docutils literal notranslate"><span class="pre">.copy()</span></code> would.</p>
+<p><strong>Therefore, we propose to silently copy when needed.</strong> The <code class="docutils literal notranslate"><span class="pre">inplace=True</span></code> option would thus mean “try inplace whenever possible”, and not guarantee it is actually done inplace.</p>
+<p>In the future, if there is demand for it, it could still be possible to add to option to raise a warning whenever this happens.
+This would be useful in an IPython shell/Jupyter Notebook setting, where the user would have the opportunity to delete
+unused references that are causing the copying to be triggered.</p>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+Example in IPython of output triggering Copy-on-Write<div class="sd-summary-down docutils">
+<svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-down" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M5.22 8.72a.75.75 0 000 1.06l6.25 6.25a.75.75 0 001.06 0l6.25-6.25a.75.75 0 00-1.06-1.06L12 14.44 6.28 8.72a.75.75 0 00-1.06 0z"></path></svg></div>
+<div class="sd-summary-up docutils">
+<svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-up" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M18.78 15.28a.75.75 0 000-1.06l-6.25-6.25a.75.75 0 00-1.06 0l-6.25 6.25a.75.75 0 101.06 1.06L12 9.56l5.72 5.72a.75.75 0 001.06 0z"></path></svg></div>
+</summary><div class="sd-summary-content sd-card-body docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s2">&quot;mode.copy_on_write&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="n">ser</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">4</span><span class="p">]:</span> <span class="n">ser_vals</span> <span class="o">=</span> <span class="n">ser</span><span class="o">.</span><span class="n">values</span> <span class="c1"># Save values to check inplace-ness</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">5</span><span class="p">]:</span> <span class="n">ser</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">5</span><span class="p">]:</span>
+<span class="mi">0</span>    <span class="mi">1</span>
+<span class="mi">1</span>    <span class="mi">2</span>
+<span class="mi">2</span>    <span class="mi">3</span>
+<span class="n">dtype</span><span class="p">:</span> <span class="n">int64</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">6</span><span class="p">]:</span> <span class="n">ser</span> <span class="o">=</span> <span class="n">ser</span><span class="p">[:]</span> <span class="c1"># Original series should go out of scope</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">7</span><span class="p">]:</span> <span class="n">ser</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="c1"># This should be inplace</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">8</span><span class="p">]:</span> <span class="n">ser</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">8</span><span class="p">]:</span>
+<span class="mi">0</span>   <span class="o">-</span><span class="mi">1</span>
+<span class="mi">1</span>    <span class="mi">2</span>
+<span class="mi">2</span>    <span class="mi">3</span>
+<span class="n">dtype</span><span class="p">:</span> <span class="n">int64</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">9</span><span class="p">]:</span> <span class="n">ser_vals</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">9</span><span class="p">]:</span> <span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span> <span class="c1"># It&#39;s not modified!</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">10</span><span class="p">]:</span> <span class="n">Out</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span> <span class="c1"># IPython kept our series alive since we displayed it!</span>
+</pre></div>
+</div>
+<p class="sd-card-text">While there are ways to mitigate this<a class="footnote-reference brackets" href="#id10" id="id4" role="doc-noteref"><span class="fn-bracket">[</span>5<span class="fn-bracket">]</span></a>, it may be helpful to let the user know that an operation that they performed
+was not inplace, since it is possible to go out of memory because of this.</p>
+</div>
+</details></section>
+<section id="return-the-calling-object-self-also-when-using-inplace-true">
+<h4>Return the calling object (<code class="docutils literal notranslate"><span class="pre">self</span></code>) also when using <code class="docutils literal notranslate"><span class="pre">inplace=True</span></code>?<a class="headerlink" href="#return-the-calling-object-self-also-when-using-inplace-true" title="Link to this heading">#</a></h4>
+<p>One of the downsides of the <code class="docutils literal notranslate"><span class="pre">inplace=True</span></code> option is that the return type of those methods
+depends on the value of <code class="docutils literal notranslate"><span class="pre">inplace</span></code>, and that method chaining does not work.
+Those downsides are still relevant for the cases where we keep <code class="docutils literal notranslate"><span class="pre">inplace=True</span></code>.
+To address this, we can have those methods return the object that was operated on
+inplace when <code class="docutils literal notranslate"><span class="pre">inplace=True</span></code>.</p>
+<p>Advantages:</p>
+<ul class="simple">
+<li><p>It enables to use inplace operations in a method chain</p></li>
+<li><p>It simplifies type annotations</p></li>
+</ul>
+<p>Disadvantages:</p>
+<ul class="simple">
+<li><p>In general, when a pandas method returns an object, this is a <em>new</em> object, and thus following the Copy-on-Write rules
+of behaving as a copy. This would introduce a special case where an <em>identical</em> object would be
+returned (<code class="docutils literal notranslate"><span class="pre">df2</span> <span class="pre">=</span> <span class="pre">df.method(inplace=True);</span> <span class="pre">assert</span> <span class="pre">df2</span> <span class="pre">is</span> <span class="pre">df</span></code>)</p></li>
+<li><p>It would change the behaviour of the current <code class="docutils literal notranslate"><span class="pre">inplace=True</span></code></p></li>
+</ul>
+<p>We generally assume that changing to return <code class="docutils literal notranslate"><span class="pre">self</span></code> should not give much problems for
+existing usage (typically, the current return value of <code class="docutils literal notranslate"><span class="pre">None</span></code> is not actively used).
+Further, we think the advantages of simplifing return types and enabling methods chains
+outweighs the special case of returning an identical object.
+<strong>Therefore, we propose that for those methods with an <code class="docutils literal notranslate"><span class="pre">inplace=True</span></code> option, the calling object (<code class="docutils literal notranslate"><span class="pre">self</span></code>) gets returned.</strong></p>
+</section>
+</section>
+</section>
+<section id="backward-compatibility">
+<h2>Backward compatibility<a class="headerlink" href="#backward-compatibility" title="Link to this heading">#</a></h2>
+<p>Removing the <code class="docutils literal notranslate"><span class="pre">inplace</span></code> keyword is a breaking change, but since the affected behaviour is <code class="docutils literal notranslate"><span class="pre">inplace=True</span></code>, the default
+behaviour when not specifying the keyword (i.e. <code class="docutils literal notranslate"><span class="pre">inplace=False</span></code>) will not change and the keyword itself can first be
+deprecated before it is removed.</p>
+</section>
+<section id="rejected-alternatives">
+<h2>Rejected alternatives<a class="headerlink" href="#rejected-alternatives" title="Link to this heading">#</a></h2>
+<section id="remove-the-inplace-keyword-altogether">
+<h3>Remove the <code class="docutils literal notranslate"><span class="pre">inplace</span></code> keyword altogether<a class="headerlink" href="#remove-the-inplace-keyword-altogether" title="Link to this heading">#</a></h3>
+<p>In the past, it was considered to remove the <code class="docutils literal notranslate"><span class="pre">inplace</span></code> keyword entirely. This was because many methods with
+the <code class="docutils literal notranslate"><span class="pre">inplace</span></code> keyword did not actually operate inplace, but made a copy and reassigned the underlying values under
+the hood, causing confusion and providing no real benefit to users.</p>
+<p>Because a majority of the methods supporting <code class="docutils literal notranslate"><span class="pre">inplace</span></code> did not operate inplace, it was considered at the time to
+deprecate and remove inplace from all methods, and add back the keyword as necessary.<a class="footnote-reference brackets" href="#id11" id="id5" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a></p>
+<p>For methods where the operation actually <em>can</em> be done inplace (group 2), however, removing the <code class="docutils literal notranslate"><span class="pre">inplace</span></code>
+keyword could give a significant performance regression when currently using this keyword with large
+DataFrames. Therefore, we decided to keep the <code class="docutils literal notranslate"><span class="pre">inplace</span></code> keyword for this small subset of methods.</p>
+</section>
+<section id="standardize-on-the-copy-keyword-instead-of-inplace">
+<h3>Standardize on the <code class="docutils literal notranslate"><span class="pre">copy</span></code> keyword instead of <code class="docutils literal notranslate"><span class="pre">inplace</span></code><a class="headerlink" href="#standardize-on-the-copy-keyword-instead-of-inplace" title="Link to this heading">#</a></h3>
+<p>It may seem more natural to standardize on the <code class="docutils literal notranslate"><span class="pre">copy</span></code> keyword instead of the <code class="docutils literal notranslate"><span class="pre">inplace</span></code> keyword, since the <code class="docutils literal notranslate"><span class="pre">copy</span></code>
+keyword already returns a new object instead of None (enabling method chaining) and avoids a copy when it is set to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
+<p>However, the <code class="docutils literal notranslate"><span class="pre">copy</span></code> keyword is not supported in any of the values-mutating methods listed in Group 2 above
+unlike <code class="docutils literal notranslate"><span class="pre">inplace</span></code>, so semantics of future inplace mutation of values align better with the current behavior of
+the <code class="docutils literal notranslate"><span class="pre">inplace</span></code> keyword, than with the current behavior of the <code class="docutils literal notranslate"><span class="pre">copy</span></code> keyword.</p>
+<p>Furthermore, with the Copy-on-Write proposal, the <code class="docutils literal notranslate"><span class="pre">copy</span></code> keyword also has become superfluous. With Copy-on-Write
+enabled, methods that return a new pandas object will always try to avoid a copy whenever possible, regardless of
+a <code class="docutils literal notranslate"><span class="pre">copy=False</span></code> keyword. Thus, the Copy-on-Write PDEP proposes to actually remove the <code class="docutils literal notranslate"><span class="pre">copy</span></code> keyword from the methods
+where it is currently used (so it would be strange to add this as a new keyword to the Group 2 methods).</p>
+<p>Currently, when using <code class="docutils literal notranslate"><span class="pre">copy=False</span></code> in methods where it is supported, a new pandas object is returned as the result
+of a method call (same as with <code class="docutils literal notranslate"><span class="pre">copy=True</span></code>), but with the values backing this object being shared with the calling
+object when possible (but the calling object is never modified). With the proposed inplace behavior for Group 2 methods,
+a potential <code class="docutils literal notranslate"><span class="pre">copy=False</span></code> option would return a new pandas object with identical values as the original object (that
+was modified inplace, in contrast to current usage of <code class="docutils literal notranslate"><span class="pre">copy=False</span></code>), which may be confusing for users, and lead to
+ambiguity with Copy on Write rules.</p>
+</section>
+</section>
+<section id="history">
+<h2>History<a class="headerlink" href="#history" title="Link to this heading">#</a></h2>
+<p>The future of the <code class="docutils literal notranslate"><span class="pre">inplace</span></code> keyword is something that has been debated a lot over the years.</p>
+<p>It may be helpful to review those discussions (see links) <a class="footnote-reference brackets" href="#id12" id="id6" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a> <a class="footnote-reference brackets" href="#id11" id="id7" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a> <a class="footnote-reference brackets" href="#id13" id="id8" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a> to better understand this PDEP.</p>
+</section>
+<section id="timeline">
+<h2>Timeline<a class="headerlink" href="#timeline" title="Link to this heading">#</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">inplace</span></code> keyword is widely used, and thus we need to take considerable time to
+deprecate and remove this feature.</p>
+<ul class="simple">
+<li><p>For those methods where the <code class="docutils literal notranslate"><span class="pre">inplace</span></code> keyword will be removed, we add a
+DeprecationWarning in the first release after acceptance (2.2 if possible, otherwise
+3.0)</p></li>
+<li><p>Together with enabling Copy-on-Write in the pandas 3.0 major release, we already
+update those methods that will keep the <code class="docutils literal notranslate"><span class="pre">inplace</span></code> keyword with the new behaviour
+(returning <code class="docutils literal notranslate"><span class="pre">self</span></code>, working inplace when possible)</p></li>
+<li><p>Somewhere during the 3.x release cycle (e.g. in 3.1, depending on when the deprecation
+was started), we change the DeprecationWarning to a more visible FutureWarning.</p></li>
+<li><p>The deprecated keyword is removed in pandas 4.0.</p></li>
+</ul>
+<p>When introducing the warning in 2.2 (or 3.0), users will already have the ability to
+enable Copy-on-Write so they can rewrite their code in a way that avoids the deprecation
+warning (remove the usage of <code class="docutils literal notranslate"><span class="pre">inplace</span></code>) while keeping the no-copy behaviour (which will
+be the default with Copy-on-Write).</p>
+</section>
+<section id="pdep-history">
+<h2>PDEP History<a class="headerlink" href="#pdep-history" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>16 February 2023: Initial draft</p></li>
+</ul>
+</section>
+<section id="references">
+<h2>References<a class="headerlink" href="#references" title="Link to this heading">#</a></h2>
+<hr class="footnotes docutils" />
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id9" role="note">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id1">1</a>,<a role="doc-backlink" href="#id2">2</a>,<a role="doc-backlink" href="#id3">3</a>)</span>
+<p><a class="reference external" href="https://pandas.pydata.org/pdeps/0007-copy-on-write.html">Copy on Write Specification</a></p>
+</aside>
+<aside class="footnote brackets" id="id10" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id4">5</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://stackoverflow.com/questions/37808904/prevent-ipython-from-storing-outputs-in-out-variable">https://stackoverflow.com/questions/37808904/prevent-ipython-from-storing-outputs-in-out-variable</a></p>
+</aside>
+<aside class="footnote brackets" id="id11" role="note">
+<span class="label"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id5">1</a>,<a role="doc-backlink" href="#id7">2</a>)</span>
+<p><a class="github reference external" href="https://github.com/pandas-dev/pandas/issues/16529">pandas-dev/pandas#16529</a></p>
+</aside>
+<aside class="footnote brackets" id="id12" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id6">2</a><span class="fn-bracket">]</span></span>
+<p><a class="github reference external" href="https://github.com/pandas-dev/pandas/issues/48141">pandas-dev/pandas#48141</a></p>
+</aside>
+<aside class="footnote brackets" id="id13" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id8">4</a><span class="fn-bracket">]</span></span>
+<p><a class="github reference external" href="https://github.com/pandas-dev/pandas/issues/50535">pandas-dev/pandas#50535</a></p>
+</aside>
+</aside>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  <!-- Previous / next buttons -->
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#abstract">Abstract</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#motivation-and-scope">Motivation and Scope</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#detailed-description">Detailed description</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#status-quo">Status Quo</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#proposed-changes-and-reasoning">Proposed changes and reasoning</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#other-design-questions">Other design questions</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#with-inplace-true-should-we-silently-copy-or-raise-an-error-if-the-data-has-references">With <code class="docutils literal notranslate"><span class="pre">inplace=True</span></code>, should we silently copy or raise an error if the data has references?</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#return-the-calling-object-self-also-when-using-inplace-true">Return the calling object (<code class="docutils literal notranslate"><span class="pre">self</span></code>) also when using <code class="docutils literal notranslate"><span class="pre">inplace=True</span></code>?</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#backward-compatibility">Backward compatibility</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rejected-alternatives">Rejected alternatives</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#remove-the-inplace-keyword-altogether">Remove the <code class="docutils literal notranslate"><span class="pre">inplace</span></code> keyword altogether</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#standardize-on-the-copy-keyword-instead-of-inplace">Standardize on the <code class="docutils literal notranslate"><span class="pre">copy</span></code> keyword instead of <code class="docutils literal notranslate"><span class="pre">inplace</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#history">History</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#timeline">Timeline</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pdep-history">PDEP History</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#references">References</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div class="tocsection sourcelink">
+    <a href="_sources/0008-inplace-methods-in-pandas.md.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=365ca57ee442770a23c6"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=365ca57ee442770a23c6"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+  <p class="copyright">
+    
+      © Copyright 2023, Pandas.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item"><p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.14.3.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

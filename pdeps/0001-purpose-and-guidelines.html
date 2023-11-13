@@ -1,0 +1,579 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>PDEP-1: Purpose and guidelines &#8212; Pandas Enhancement Proposals  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=362ab14a" />
+    <link rel="stylesheet" type="text/css" href="_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="_static/pandas.css?v=cd9ee792" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=365ca57ee442770a23c6" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=365ca57ee442770a23c6" />
+  <script src="_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=365ca57ee442770a23c6"></script>
+
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/design-tabs.js?v=36754332"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '0001-purpose-and-guidelines';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="PDEP-4: Consistent datetime parsing" href="0004-consistent-to-datetime-parsing.html" />
+    <link rel="prev" title="Index of Pandas Enhancement Proposals" href="index.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+<header>
+  <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+  <div class="container">
+  <a class="navbar-brand" href="../."><img alt="" src="../static/img/pandas_white.svg"></a>
+  <div class="navbar-collapse collapse" id="nav-content">
+    <ul class="navbar-nav ms-auto">
+      <li class="nav-item">
+          <a class="nav-link" href="../about/roadmap.html">Back to the PDEP index</a>
+      </li>
+    </ul>
+  </div>
+  </div>
+  </nav>
+  </header>
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          <div class="navbar-item"><nav class="navbar-nav">
+  <p class="sidebar-header-items__title"
+     role="heading"
+     aria-level="1"
+     aria-label="Site Navigation">
+    Site Navigation
+  </p>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item current active">
+                      <a class="nav-link nav-internal" href="#">
+                        PDEP-1: Purpose and guidelines
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="0004-consistent-to-datetime-parsing.html">
+                        PDEP-4: Consistent datetime parsing
+                      </a>
+                    </li>
+                
+  </ul>
+</nav></div>
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">PDEP-1:...</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="pdep-1-purpose-and-guidelines">
+<h1>PDEP-1: Purpose and guidelines<a class="headerlink" href="#pdep-1-purpose-and-guidelines" title="Link to this heading">#</a></h1>
+<ul class="simple">
+<li><p>Created: 3 August 2022</p></li>
+<li><p>Status: Accepted</p></li>
+<li><p>Discussion: <a class="reference external" href="https://github.com/pandas-dev/pandas/pull/47444">#47444</a>,
+<a class="reference external" href="https://github.com/pandas-dev/pandas/pull/51417">#51417</a></p></li>
+<li><p>Author: <a class="reference external" href="https://github.com/datapythonista">Marc Garcia</a>,
+<a class="reference external" href="https://github.com/noatamir">Noa Tamir</a></p></li>
+<li><p>Revision: 2</p></li>
+</ul>
+<section id="pdep-definition-purpose-and-scope">
+<h2>PDEP definition, purpose and scope<a class="headerlink" href="#pdep-definition-purpose-and-scope" title="Link to this heading">#</a></h2>
+<p>A PDEP (pandas enhancement proposal) is a proposal for a <strong>major</strong> change in
+pandas, in a similar way as a Python <a class="reference external" href="https://peps.python.org/pep-0001/">PEP</a>
+or a NumPy <a class="reference external" href="https://numpy.org/neps/nep-0000.html">NEP</a>.</p>
+<p>Bug fixes and conceptually minor changes (e.g. adding a parameter to a function) are out of the
+scope of PDEPs. A PDEP should be used for changes that are not immediate and not obvious, when
+everybody in the pandas community needs to be aware of the possibility of an upcoming change.
+Such changes require detailed documentation before being implemented and frequently lead to a
+significant discussion within the community.</p>
+<p>PDEPs are appropriate for user facing changes, internal changes and significant discussions.
+Examples of topics worth a PDEP could include substantial API changes, breaking behavior changes,
+moving a module from pandas to a separate repository, or a refactoring of the pandas block manager.
+It is not always trivial to know which issue has enough scope to require the full PDEP process.
+Some simple API changes have sufficient consensus among the core team, and minimal impact on the
+community. On the other hand, if an issue becomes controversial, i.e. it generated a significant
+discussion, one could suggest opening a PDEP to formalize and document the discussion, making it
+easier for the wider community to participate. For context, see
+<a class="reference internal" href="#List-of-issues"><span class="xref myst">the list of issues that could have been a PDEP</span></a>.</p>
+</section>
+<section id="pdep-guidelines">
+<h2>PDEP guidelines<a class="headerlink" href="#pdep-guidelines" title="Link to this heading">#</a></h2>
+<section id="target-audience">
+<h3>Target audience<a class="headerlink" href="#target-audience" title="Link to this heading">#</a></h3>
+<p>A PDEP is a public document available to anyone, but the main stakeholders to
+consider when writing a PDEP are:</p>
+<ul class="simple">
+<li><p>The core development team, who will have the final decision on whether a PDEP
+is approved or not</p></li>
+<li><p>Contributors to pandas and other related projects, and experienced users. Their
+feedback is highly encouraged and appreciated, to make sure all points of views
+are taken into consideration</p></li>
+<li><p>The wider pandas community, in particular users, who may or may not have feedback
+on the proposal, but should know and be able to understand the future direction of
+the project</p></li>
+</ul>
+</section>
+<section id="pdep-authors">
+<h3>PDEP authors<a class="headerlink" href="#pdep-authors" title="Link to this heading">#</a></h3>
+<p>Anyone can propose a PDEP, but a core member should be engaged to advise on a proposal made by
+non-core contributors. To submit a PDEP as a community member, please propose the PDEP concept on
+<a class="reference external" href="https://github.com/pandas-dev/pandas/issues/new/choose">an issue</a>, and find a pandas team
+member to collaborate with. They can advise you on the PDEP process and should be listed as an
+advisor on the PDEP when it is submitted to the PDEP repository.</p>
+</section>
+<section id="workflow">
+<h3>Workflow<a class="headerlink" href="#workflow" title="Link to this heading">#</a></h3>
+<p>The possible states of a PDEP are:</p>
+<ul class="simple">
+<li><p>Under discussion</p></li>
+<li><p>Accepted</p></li>
+<li><p>Implemented</p></li>
+<li><p>Rejected</p></li>
+</ul>
+<p>Next is described the workflow that PDEPs can follow.</p>
+<section id="submitting-a-pdep">
+<h4>Submitting a PDEP<a class="headerlink" href="#submitting-a-pdep" title="Link to this heading">#</a></h4>
+<p>Proposing a PDEP is done by creating a PR adding a new file to <code class="docutils literal notranslate"><span class="pre">web/pdeps/</span></code>.
+The file is a markdown file, you can use <code class="docutils literal notranslate"><span class="pre">web/pdeps/0001.md</span></code> as a reference
+for the expected format.</p>
+<p>The initial status of a PDEP will be <code class="docutils literal notranslate"><span class="pre">Status:</span> <span class="pre">Under</span> <span class="pre">discussion</span></code>. This will be changed to
+<code class="docutils literal notranslate"><span class="pre">Status:</span> <span class="pre">Accepted</span></code> when the PDEP is ready and has the approval of the core team.</p>
+</section>
+<section id="accepted-pdep">
+<h4>Accepted PDEP<a class="headerlink" href="#accepted-pdep" title="Link to this heading">#</a></h4>
+<p>A PDEP can only be accepted by the core development team, if the proposal is considered
+worth implementing. Decisions will be made based on the process detailed in the
+<a class="reference external" href="https://github.com/pandas-dev/pandas-governance/blob/master/governance.md">pandas governance document</a>.
+In general, more than one approval will be needed before the PR is merged. And
+there should not be any <code class="docutils literal notranslate"><span class="pre">Request</span> <span class="pre">changes</span></code> review at the time of merging.</p>
+<p>Once a PDEP is accepted, any contributions can be made toward the implementation of the PDEP,
+with an open-ended completion timeline. Development of pandas is difficult to understand and
+forecast, being that the contributors to pandas are a mix of volunteers and developers paid from different sources,
+with different priorities. For companies, institutions or individuals with interest in seeing a
+PDEP being implemented, or to in general see progress to the pandas roadmap, please check how
+you can help in the <a class="reference internal" href="#/contribute.html"><span class="xref myst">contributing page</span></a>.</p>
+</section>
+<section id="implemented-pdep">
+<h4>Implemented PDEP<a class="headerlink" href="#implemented-pdep" title="Link to this heading">#</a></h4>
+<p>Once a PDEP is implemented and available in the main branch of pandas, its
+status will be changed to <code class="docutils literal notranslate"><span class="pre">Status:</span> <span class="pre">Implemented</span></code>, so there is visibility that the PDEP
+is not part of the roadmap and future plans, but a change that has already
+happened. The first pandas version in which the PDEP implementation is
+available will also be included in the PDEP header with for example
+<code class="docutils literal notranslate"><span class="pre">Implemented:</span> <span class="pre">v2.0.0</span></code>.</p>
+</section>
+<section id="rejected-pdep">
+<h4>Rejected PDEP<a class="headerlink" href="#rejected-pdep" title="Link to this heading">#</a></h4>
+<p>A PDEP can be rejected when the final decision is that its implementation is
+not in the best interests of the project. Rejected PDEPs are as useful as accepted
+PDEPs, since there are discussions that are worth having, and decisions about
+changes to pandas being made. They will be merged with <code class="docutils literal notranslate"><span class="pre">Status:</span> <span class="pre">Rejected</span></code>, so
+there is visibility on what was discussed and what was the outcome of the
+discussion. A PDEP can be rejected for different reasons, for example good ideas
+that are not backward-compatible, and the breaking changes are not considered worth
+implementing.</p>
+</section>
+<section id="invalid-pdep">
+<h4>Invalid PDEP<a class="headerlink" href="#invalid-pdep" title="Link to this heading">#</a></h4>
+<p>For submitted PDEPs that do not contain proper documentation, are out of scope, or
+are not useful to the community for any other reason, the PR will be closed after
+discussion with the author, instead of merging them as rejected. This is to avoid
+adding noise to the list of rejected PDEPs, which should contain documentation as
+good as an accepted PDEP, but where the final decision was to not implement the changes.</p>
+</section>
+</section>
+</section>
+<section id="evolution-of-pdeps">
+<h2>Evolution of PDEPs<a class="headerlink" href="#evolution-of-pdeps" title="Link to this heading">#</a></h2>
+<p>Most PDEPs are not expected to change after they are accepted. Once there is agreement on the changes,
+and they are implemented, the PDEP will be only useful to understand why the development happened,
+and the details of the discussion.</p>
+<p>But in some cases, a PDEP can be updated. For example, a PDEP defining a procedure or
+a policy, like this one (PDEP-1). Or cases when after attempting the implementation,
+new knowledge is obtained that makes the original PDEP obsolete, and changes are
+required. When there are specific changes to be made to the original PDEP, this will
+be edited, its <code class="docutils literal notranslate"><span class="pre">Revision:</span> <span class="pre">X</span></code> label will be increased by one, and a note will be added
+to the <code class="docutils literal notranslate"><span class="pre">PDEP-N</span> <span class="pre">history</span></code> section. This will let readers understand that the PDEP has
+changed and avoid confusion.</p>
+</section>
+<section id="list-of-issues-that-could-have-been-pdeps-for-context">
+<h2><a id="List-of-issues"></a> List of issues that could have been PDEPs for context<a class="headerlink" href="#list-of-issues-that-could-have-been-pdeps-for-context" title="Link to this heading">#</a></h2>
+<section id="clear-examples-for-potential-pdeps">
+<h3>Clear examples for potential PDEPs:<a class="headerlink" href="#clear-examples-for-potential-pdeps" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Adding a new parameter to many existing methods, or deprecating one in many places. For example:</p>
+<ul>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">numeric_only</span></code> deprecation (<a class="reference external" href="https://github.com/pandas-dev/pandas/issues/28900">GH-28900</a>) affected many methods and could have been a PDEP.</p></li>
+</ul>
+</li>
+<li><p>Adding a new data type has impact on a variety of places that need to handle the data type.
+Such wide-ranging impact would require a PDEP. For example:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">Categorical</span></code> (<a class="reference external" href="https://github.com/pandas-dev/pandas/pull/7217">GH-7217</a>, <a class="reference external" href="https://github.com/pandas-dev/pandas/issues/8074">GH-8074</a>), <code class="docutils literal notranslate"><span class="pre">StringDtype</span></code> (<a class="reference external" href="https://github.com/pandas-dev/pandas/issues/8640">GH-8640</a>), <code class="docutils literal notranslate"><span class="pre">ArrowDtype</span></code></p></li>
+</ul>
+</li>
+<li><p>A significant (breaking) change in existing behavior. For example:</p>
+<ul>
+<li><p>Copy/view changes (<a class="reference external" href="https://github.com/pandas-dev/pandas/issues/36195">GH-36195</a>)</p></li>
+</ul>
+</li>
+<li><p>Support of new Python features with a wide impact on the project. For example:</p>
+<ul>
+<li><p>Supporting typing within pandas vs. creation of <code class="docutils literal notranslate"><span class="pre">pandas-stubs</span></code> (<a class="reference external" href="https://github.com/pandas-dev/pandas/issues/43197">GH-43197</a>,
+<a class="reference external" href="https://github.com/pandas-dev/pandas/issues/45253">GH-45253</a>)</p></li>
+</ul>
+</li>
+<li><p>New required dependency.</p></li>
+<li><p>Removing module from the project or splitting it off to a separate repository:</p>
+<ul>
+<li><p>Moving rarely used I/O connectors to a separate repository <a class="reference internal" href="#28409"><span class="xref myst">GH-28409</span></a></p></li>
+</ul>
+</li>
+<li><p>Significant changes to contributors’ processes are not going to have an impact on users, but
+they do benefit from structured discussion among the contributors. For example:</p>
+<ul>
+<li><p>Changing the build system to meson (<a class="reference external" href="https://github.com/pandas-dev/pandas/pull/49115">GH-49115</a>)</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="borderline-examples">
+<h3>Borderline examples:<a class="headerlink" href="#borderline-examples" title="Link to this heading">#</a></h3>
+<p>Small changes to core functionality, such as <code class="docutils literal notranslate"><span class="pre">DataFrame</span></code> and <code class="docutils literal notranslate"><span class="pre">Series</span></code>, should always be
+considered as a PDEP candidate as it will likely have a big impact on users. But the same types
+of changes in other functionalities would not be good PDEP candidates. That said, any discussion,
+no matter how small the change, which becomes controversial is a PDEP candidate. Consider if more
+attention and/or a formal decision-making process would help. Following are some examples we
+hope can help clarify our meaning here:</p>
+<ul class="simple">
+<li><p>API breaking changes, or discussion thereof, could be a PDEP. For example:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">value_counts</span></code> result rename (<a class="reference external" href="https://github.com/pandas-dev/pandas/issues/49497">GH-49497</a>). The scope does not justify a PDEP at first, but later a
+discussion about whether it should be executed as a breaking change or with deprecation
+emerges, which could benefit from the PDEP process.</p></li>
+</ul>
+</li>
+<li><p>Adding new methods or parameters to an existing method typically will not require a PDEP for
+non-core features. For example:</p>
+<ul>
+<li><p>Both <code class="docutils literal notranslate"><span class="pre">dropna(percentage)</span></code> (<a class="reference external" href="https://github.com/pandas-dev/pandas/issues/35299">GH-35299</a>), and <code class="docutils literal notranslate"><span class="pre">Timestamp.normalize()</span></code> (<a class="reference external" href="https://github.com/pandas-dev/pandas/issues/8794">GH-8794</a>)
+would not have required a PDEP.</p></li>
+<li><p>On the other hand, <code class="docutils literal notranslate"><span class="pre">DataFrame.assign()</span></code> might. While it is a single method without backwards
+compatibility concerns, it is also a core feature and the discussion should be highly visible.</p></li>
+</ul>
+</li>
+<li><p>Deprecating or removing a single method would not require a PDEP in most cases.</p>
+<ul>
+<li><p>That said, <code class="docutils literal notranslate"><span class="pre">DataFrame.append</span></code> (<a class="reference external" href="https://github.com/pandas-dev/pandas/issues/35407">GH-35407</a>) is an example of deprecations on core
+features that would be a good candidate for a PDEP.</p></li>
+</ul>
+</li>
+<li><p>Changing the default value of parameters in a core pandas method is another edge case. For
+example:</p>
+<ul>
+<li><p>Such changes for <code class="docutils literal notranslate"><span class="pre">dropna</span></code> in <code class="docutils literal notranslate"><span class="pre">DataFrame.groupby</span></code> and <code class="docutils literal notranslate"><span class="pre">Series.groupby</span></code> could be a PDEP.</p></li>
+</ul>
+</li>
+<li><p>New top level modules and/or exposing internal classes. For example:</p>
+<ul>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">pandas.api.typing</span></code> (<a class="reference external" href="https://github.com/pandas-dev/pandas/issues/48577">GH-48577</a>) is relatively small and would not necessarily
+require a PDEP.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="pdep-1-history">
+<h3>PDEP-1 History<a class="headerlink" href="#pdep-1-history" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>3 August 2022: Initial version (<a class="reference external" href="https://github.com/pandas-dev/pandas/pull/47938">GH-47938</a>)</p></li>
+<li><p>15 February 2023: Version 2 (<a class="reference external" href="https://github.com/pandas-dev/pandas/pull/51417">GH-51417</a>) clarifies the scope of PDEPs and adds examples</p></li>
+</ul>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  <!-- Previous / next buttons -->
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Index of Pandas Enhancement Proposals</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="0004-consistent-to-datetime-parsing.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">PDEP-4: Consistent datetime parsing</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pdep-definition-purpose-and-scope">PDEP definition, purpose and scope</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pdep-guidelines">PDEP guidelines</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#target-audience">Target audience</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pdep-authors">PDEP authors</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#workflow">Workflow</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#submitting-a-pdep">Submitting a PDEP</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#accepted-pdep">Accepted PDEP</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#implemented-pdep">Implemented PDEP</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#rejected-pdep">Rejected PDEP</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#invalid-pdep">Invalid PDEP</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#evolution-of-pdeps">Evolution of PDEPs</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#list-of-issues-that-could-have-been-pdeps-for-context"><a id="List-of-issues"></a> List of issues that could have been PDEPs for context</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#clear-examples-for-potential-pdeps">Clear examples for potential PDEPs:</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#borderline-examples">Borderline examples:</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pdep-1-history">PDEP-1 History</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div class="tocsection sourcelink">
+    <a href="_sources/0001-purpose-and-guidelines.md.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=365ca57ee442770a23c6"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=365ca57ee442770a23c6"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+  <p class="copyright">
+    
+      © Copyright 2023, Pandas.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item"><p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.14.3.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

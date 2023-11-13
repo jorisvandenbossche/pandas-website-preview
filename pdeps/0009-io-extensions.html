@@ -1,0 +1,799 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>PDEP-9: Allow third-party projects to register pandas connectors with a standard API &#8212; Pandas Enhancement Proposals  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=362ab14a" />
+    <link rel="stylesheet" type="text/css" href="_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="_static/pandas.css?v=cd9ee792" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=365ca57ee442770a23c6" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=365ca57ee442770a23c6" />
+  <script src="_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=365ca57ee442770a23c6"></script>
+
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/design-tabs.js?v=36754332"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '0009-io-extensions';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+<header>
+  <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+  <div class="container">
+  <a class="navbar-brand" href="../."><img alt="" src="../static/img/pandas_white.svg"></a>
+  <div class="navbar-collapse collapse" id="nav-content">
+    <ul class="navbar-nav ms-auto">
+      <li class="nav-item">
+          <a class="nav-link" href="../about/roadmap.html">Back to the PDEP index</a>
+      </li>
+    </ul>
+  </div>
+  </div>
+  </nav>
+  </header>
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          <div class="navbar-item"><nav class="navbar-nav">
+  <p class="sidebar-header-items__title"
+     role="heading"
+     aria-level="1"
+     aria-label="Site Navigation">
+    Site Navigation
+  </p>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="0001-purpose-and-guidelines.html">
+                        PDEP-1: Purpose and guidelines
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="0004-consistent-to-datetime-parsing.html">
+                        PDEP-4: Consistent datetime parsing
+                      </a>
+                    </li>
+                
+  </ul>
+</nav></div>
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">PDEP-9:...</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="pdep-9-allow-third-party-projects-to-register-pandas-connectors-with-a-standard-api">
+<h1>PDEP-9: Allow third-party projects to register pandas connectors with a standard API<a class="headerlink" href="#pdep-9-allow-third-party-projects-to-register-pandas-connectors-with-a-standard-api" title="Link to this heading">#</a></h1>
+<ul class="simple">
+<li><p>Created: 5 March 2023</p></li>
+<li><p>Status: Rejected</p></li>
+<li><p>Discussion: <a class="reference external" href="https://github.com/pandas-dev/pandas/pull/51799">#51799</a>
+<a class="reference external" href="https://github.com/pandas-dev/pandas/pull/53005">#53005</a></p></li>
+<li><p>Author: <a class="reference external" href="https://github.com/datapythonista">Marc Garcia</a></p></li>
+<li><p>Revision: 1</p></li>
+</ul>
+<section id="pdep-summary">
+<h2>PDEP Summary<a class="headerlink" href="#pdep-summary" title="Link to this heading">#</a></h2>
+<p>This document proposes that third-party projects implementing I/O or memory
+connectors to pandas can register them using Python’s entrypoint system,
+and make them available to pandas users with the usual pandas I/O interface.
+For example, packages independent from pandas could implement readers from
+DuckDB and writers to Delta Lake, and when installed in the user environment
+the user would be able to use them as if they were implemented in pandas.
+For example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span>
+
+<span class="n">pandas</span><span class="o">.</span><span class="n">load_io_plugins</span><span class="p">()</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">read_duckdb</span><span class="p">(</span><span class="s2">&quot;SELECT * FROM &#39;my_dataset.parquet&#39;;&quot;</span><span class="p">)</span>
+
+<span class="n">df</span><span class="o">.</span><span class="n">to_deltalake</span><span class="p">(</span><span class="s1">&#39;/delta/my_dataset&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This would allow to easily extend the existing number of connectors, adding
+support to new formats and database engines, data lake technologies,
+out-of-core connectors, the new ADBC interface, and others, and at the
+same time reduce the maintenance cost of the pandas code base.</p>
+</section>
+<section id="current-state">
+<h2>Current state<a class="headerlink" href="#current-state" title="Link to this heading">#</a></h2>
+<p>pandas supports importing and exporting data from different formats using
+I/O connectors, currently implemented in <code class="docutils literal notranslate"><span class="pre">pandas/io</span></code>, as well as connectors
+to in-memory structures like Python structures or other library formats.
+In many cases, those connectors wrap an existing Python library, while in
+some others, pandas implements the logic to read and write to a particular
+format.</p>
+<p>In some cases, different engines exist for the same format. The API to use
+those connectors is <code class="docutils literal notranslate"><span class="pre">pandas.read_&lt;format&gt;(engine='&lt;engine-name&gt;',</span> <span class="pre">...)</span></code> to
+import data, and <code class="docutils literal notranslate"><span class="pre">DataFrame.to_&lt;format&gt;(engine='&lt;engine-name&gt;',</span> <span class="pre">...)</span></code> to
+export data.</p>
+<p>For objects exported to memory (like a Python dict) the API is the same as
+for I/O, <code class="docutils literal notranslate"><span class="pre">DataFrame.to_&lt;format&gt;(...)</span></code>. For formats imported from objects in
+memory, the API is different using the <code class="docutils literal notranslate"><span class="pre">from_</span></code> prefix instead of <code class="docutils literal notranslate"><span class="pre">read_</span></code>,
+<code class="docutils literal notranslate"><span class="pre">DataFrame.from_&lt;format&gt;(...)</span></code>.</p>
+<p>In some cases, the pandas API provides <code class="docutils literal notranslate"><span class="pre">DataFrame.to_*</span></code> methods that are not
+used to export the data to a disk or memory object, but instead to transform
+the index of a <code class="docutils literal notranslate"><span class="pre">DataFrame</span></code>: <code class="docutils literal notranslate"><span class="pre">DataFrame.to_period</span></code> and <code class="docutils literal notranslate"><span class="pre">DataFrame.to_timestamp</span></code>.</p>
+<p>Dependencies of the connectors are not loaded by default, and are
+imported when the connector is used. If the dependencies are not installed
+an <code class="docutils literal notranslate"><span class="pre">ImportError</span></code> is raised.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pandas</span><span class="o">.</span><span class="n">read_gbq</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="w">  </span><span class="c">...</span>
+<span class="gr">ImportError</span>: <span class="n">Missing optional dependency &#39;pandas-gbq&#39;.</span>
+<span class="x">pandas-gbq is required to load data from Google BigQuery.</span>
+<span class="x">See the docs: https://pandas-gbq.readthedocs.io.</span>
+<span class="x">Use pip or conda to install pandas-gbq.</span>
+</pre></div>
+</div>
+<section id="supported-formats">
+<h3>Supported formats<a class="headerlink" href="#supported-formats" title="Link to this heading">#</a></h3>
+<p>The list of formats can be found in the
+<a class="reference external" href="https://pandas.pydata.org/docs/dev/user_guide/io.html">IO guide</a>.
+A more detailed table, including in memory objects, and I/O connectors in the
+DataFrame styler is presented next:</p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Format</p></th>
+<th class="head"><p>Reader</p></th>
+<th class="head"><p>Writer</p></th>
+<th class="head"><p>Engines</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>CSV</p></td>
+<td><p>X</p></td>
+<td><p>X</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">c</span></code>, <code class="docutils literal notranslate"><span class="pre">python</span></code>, <code class="docutils literal notranslate"><span class="pre">pyarrow</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>FWF</p></td>
+<td><p>X</p></td>
+<td><p></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">c</span></code>, <code class="docutils literal notranslate"><span class="pre">python</span></code>, <code class="docutils literal notranslate"><span class="pre">pyarrow</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>JSON</p></td>
+<td><p>X</p></td>
+<td><p>X</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">ujson</span></code>, <code class="docutils literal notranslate"><span class="pre">pyarrow</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>HTML</p></td>
+<td><p>X</p></td>
+<td><p>X</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">lxml</span></code>, <code class="docutils literal notranslate"><span class="pre">bs4/html5lib</span></code> (parameter <code class="docutils literal notranslate"><span class="pre">flavor</span></code>)</p></td>
+</tr>
+<tr class="row-even"><td><p>LaTeX</p></td>
+<td><p></p></td>
+<td><p>X</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p>XML</p></td>
+<td><p>X</p></td>
+<td><p>X</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">lxml</span></code>, <code class="docutils literal notranslate"><span class="pre">etree</span></code> (parameter <code class="docutils literal notranslate"><span class="pre">parser</span></code>)</p></td>
+</tr>
+<tr class="row-even"><td><p>Clipboard</p></td>
+<td><p>X</p></td>
+<td><p>X</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p>Excel</p></td>
+<td><p>X</p></td>
+<td><p>X</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">xlrd</span></code>, <code class="docutils literal notranslate"><span class="pre">openpyxl</span></code>, <code class="docutils literal notranslate"><span class="pre">odf</span></code>, <code class="docutils literal notranslate"><span class="pre">pyxlsb</span></code> (each engine supports different file formats)</p></td>
+</tr>
+<tr class="row-even"><td><p>HDF5</p></td>
+<td><p>X</p></td>
+<td><p>X</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p>Feather</p></td>
+<td><p>X</p></td>
+<td><p>X</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p>Parquet</p></td>
+<td><p>X</p></td>
+<td><p>X</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">pyarrow</span></code>, <code class="docutils literal notranslate"><span class="pre">fastparquet</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>ORC</p></td>
+<td><p>X</p></td>
+<td><p>X</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p>Stata</p></td>
+<td><p>X</p></td>
+<td><p>X</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p>SAS</p></td>
+<td><p>X</p></td>
+<td><p></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p>SPSS</p></td>
+<td><p>X</p></td>
+<td><p></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p>Pickle</p></td>
+<td><p>X</p></td>
+<td><p>X</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p>SQL</p></td>
+<td><p>X</p></td>
+<td><p>X</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">sqlalchemy</span></code>, <code class="docutils literal notranslate"><span class="pre">dbapi2</span></code> (inferred from the type of the <code class="docutils literal notranslate"><span class="pre">con</span></code> parameter)</p></td>
+</tr>
+<tr class="row-odd"><td><p>BigQuery</p></td>
+<td><p>X</p></td>
+<td><p>X</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p>dict</p></td>
+<td><p>X</p></td>
+<td><p>X</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p>records</p></td>
+<td><p>X</p></td>
+<td><p>X</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p>string</p></td>
+<td><p></p></td>
+<td><p>X</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p>markdown</p></td>
+<td><p></p></td>
+<td><p>X</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p>xarray</p></td>
+<td><p></p></td>
+<td><p>X</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<p>At the time of writing this document, the <code class="docutils literal notranslate"><span class="pre">io/</span></code> module contains
+close to 100,000 lines of Python, C and Cython code.</p>
+<p>There is no objective criteria for when a format is included
+in pandas, and the list above is mostly the result of a developer
+being interested in implementing the connectors for a certain
+format in pandas.</p>
+<p>The number of existing formats available for data that can be processed with
+pandas is constantly increasing, and its difficult for pandas to keep up to
+date even with popular formats. It possibly makes sense to have connectors
+to PyArrow, PySpark, Iceberg, DuckDB, Hive, Polars, and many others.</p>
+<p>At the same time, some of the formats are not frequently used as shown in the
+<a class="reference external" href="https://pandas.pydata.org//community/blog/2019-user-survey.html">2019 user survey</a>.
+Those less popular formats include SPSS, SAS, Google BigQuery and
+Stata. Note that only I/O formats (and not memory formats like records or xarray)
+were included in the survey.</p>
+<p>The maintenance cost of supporting all formats is not only in maintaining the
+code and reviewing pull requests, but also it has a significant cost in time
+spent on CI systems installing dependencies, compiling code, running tests, etc.</p>
+<p>In some cases, the main maintainers of some of the connectors are not part of
+the pandas core development team, but people specialized in one of the formats.</p>
+</section>
+</section>
+<section id="proposal">
+<h2>Proposal<a class="headerlink" href="#proposal" title="Link to this heading">#</a></h2>
+<p>While the current pandas approach has worked reasonably well, it is difficult
+to find a stable solution where the maintenance incurred in pandas is not
+too big, while at the same time users can interact with all different formats
+and representations they are interested in, in an easy and intuitive way.</p>
+<p>Third-party packages are already able to implement connectors to pandas, but
+there are some limitations to it:</p>
+<ul class="simple">
+<li><p>Given the large number of formats supported by pandas itself, third-party
+connectors are likely seen as second class citizens, not important enough
+to be used, or not well supported.</p></li>
+<li><p>There is no standard API for external I/O connectors, and users need
+to learn each of them individually. Since the pandas I/O API is inconsistent
+by using read/to instead of read/write or from/to, developers in many cases
+ignore the convention. Also, even if developers follow the pandas convention
+the namespaces would be different, since developers of connectors will rarely
+monkeypatch their functions into the <code class="docutils literal notranslate"><span class="pre">pandas</span></code> or <code class="docutils literal notranslate"><span class="pre">DataFrame</span></code> namespace.</p></li>
+<li><p>Method chaining is not possible with third-party I/O connectors to export
+data, unless authors monkey patch the <code class="docutils literal notranslate"><span class="pre">DataFrame</span></code> class, which should not
+be encouraged.</p></li>
+</ul>
+<p>This document proposes to open the development of pandas I/O connectors to
+third-party libraries in a standard way that overcomes those limitations.</p>
+<section id="proposal-implementation">
+<h3>Proposal implementation<a class="headerlink" href="#proposal-implementation" title="Link to this heading">#</a></h3>
+<p>Implementing this proposal would not require major changes to pandas, and
+the API defined next would be used.</p>
+<section id="user-api">
+<h4>User API<a class="headerlink" href="#user-api" title="Link to this heading">#</a></h4>
+<p>Users will be able to install third-party packages implementing pandas
+connectors using the standard packaging tools (pip, conda, etc.). These
+connectors should implement entrypoints that pandas will use to
+automatically create the corresponding methods <code class="docutils literal notranslate"><span class="pre">pandas.read_*</span></code>,
+<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame.to_*</span></code> and <code class="docutils literal notranslate"><span class="pre">pandas.Series.to_*</span></code>. Arbitrary function or
+method names will not be created by this interface, only the <code class="docutils literal notranslate"><span class="pre">read_*</span></code>
+and <code class="docutils literal notranslate"><span class="pre">to_*</span></code> pattern will be allowed.</p>
+<p>By simply installing the appropriate packages and calling the function
+<code class="docutils literal notranslate"><span class="pre">pandas.load_io_plugins()</span></code> users will be able to use code like this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span>
+
+<span class="n">pandas</span><span class="o">.</span><span class="n">load_io_plugins</span><span class="p">()</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">read_duckdb</span><span class="p">(</span><span class="s2">&quot;SELECT * FROM &#39;dataset.parquet&#39;;&quot;</span><span class="p">)</span>
+
+<span class="n">df</span><span class="o">.</span><span class="n">to_hive</span><span class="p">(</span><span class="n">hive_conn</span><span class="p">,</span> <span class="s2">&quot;hive_table&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This API allows for method chaining:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="n">pandas</span><span class="o">.</span><span class="n">read_duckdb</span><span class="p">(</span><span class="s2">&quot;SELECT * FROM &#39;dataset.parquet&#39;;&quot;</span><span class="p">)</span>
+       <span class="o">.</span><span class="n">to_hive</span><span class="p">(</span><span class="n">hive_conn</span><span class="p">,</span> <span class="s2">&quot;hive_table&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The total number of I/O functions and methods is expected to be small, as users
+in general use only a small subset of formats. The number could actually be
+reduced from the current state if the less popular formats (such as SAS, SPSS,
+BigQuery, etc.) are removed from the pandas core into third-party packages.
+Moving these connectors is not part of this proposal, and could be discussed
+later in a separate proposal.</p>
+</section>
+<section id="plugin-registration">
+<h4>Plugin registration<a class="headerlink" href="#plugin-registration" title="Link to this heading">#</a></h4>
+<p>Third-party packages would implement
+<a class="reference external" href="https://setuptools.pypa.io/en/latest/userguide/entry_point.html#entry-points-for-plugins">entrypoints</a>
+to define the connectors that they implement, under a group <code class="docutils literal notranslate"><span class="pre">dataframe.io</span></code>.</p>
+<p>For example, a hypothetical project <code class="docutils literal notranslate"><span class="pre">pandas_duckdb</span></code> implementing a <code class="docutils literal notranslate"><span class="pre">read_duckdb</span></code>
+function, could use <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code> to define the next entry point:</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[project.entry-points.&quot;dataframe.io&quot;]</span>
+<span class="n">reader_duckdb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;pandas_duckdb:read_duckdb&quot;</span>
+</pre></div>
+</div>
+<p>When the user calls <code class="docutils literal notranslate"><span class="pre">pandas.load_io_plugins()</span></code>, it would read the entrypoint registry for the
+<code class="docutils literal notranslate"><span class="pre">dataframe.io</span></code> group, and would dynamically create methods in the <code class="docutils literal notranslate"><span class="pre">pandas</span></code>,
+<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code> and <code class="docutils literal notranslate"><span class="pre">pandas.Series</span></code> namespaces for them. Only entrypoints with
+name starting by <code class="docutils literal notranslate"><span class="pre">reader_</span></code> or <code class="docutils literal notranslate"><span class="pre">writer_</span></code> would be processed by pandas, and the functions
+registered in the entrypoint would be made available to pandas users in the corresponding
+pandas namespaces. The text after the keywords <code class="docutils literal notranslate"><span class="pre">reader_</span></code> and <code class="docutils literal notranslate"><span class="pre">writer_</span></code> would be used
+for the name of the function. In the example above, the entrypoint name <code class="docutils literal notranslate"><span class="pre">reader_duckdb</span></code>
+would create <code class="docutils literal notranslate"><span class="pre">pandas.read_duckdb</span></code>. An entrypoint with name <code class="docutils literal notranslate"><span class="pre">writer_hive</span></code> would create
+the methods <code class="docutils literal notranslate"><span class="pre">DataFrame.to_hive</span></code> and <code class="docutils literal notranslate"><span class="pre">Series.to_hive</span></code>.</p>
+<p>Entrypoints not starting with <code class="docutils literal notranslate"><span class="pre">reader_</span></code> or <code class="docutils literal notranslate"><span class="pre">writer_</span></code> would be ignored by this interface,
+but will not raise an exception since they can be used for future extensions of this
+API, or other related dataframe I/O interfaces.</p>
+</section>
+<section id="internal-api">
+<h4>Internal API<a class="headerlink" href="#internal-api" title="Link to this heading">#</a></h4>
+<p>Connectors will use the dataframe interchange API to provide data to pandas. When
+data is read from a connector, and before returning it to the user as a response
+to <code class="docutils literal notranslate"><span class="pre">pandas.read_&lt;format&gt;</span></code>, data will be parsed from the data interchange interface
+and converted to a pandas DataFrame. In practice, connectors are likely to return
+a pandas DataFrame or a PyArrow Table, but the interface will support any object
+implementing the dataframe interchange API.</p>
+</section>
+<section id="connector-guidelines">
+<h4>Connector guidelines<a class="headerlink" href="#connector-guidelines" title="Link to this heading">#</a></h4>
+<p>In order to provide a better and more consistent experience to users, guidelines
+will be created to unify terminology and behavior. Some of the topics to unify are
+defined next.</p>
+<p><strong>Guidelines to avoid name conflicts</strong>. Since it is expected that more than one
+implementation exists for certain formats, as it already happens, guidelines on
+how to name connectors would be created. The easiest approach is probably to use
+as the format a string of the type <code class="docutils literal notranslate"><span class="pre">to_&lt;format&gt;_&lt;implementation-id&gt;</span></code> if it is
+expected that more than one connector can exist. For example, for LanceDB it is likely
+that only one connector exist, and the name <code class="docutils literal notranslate"><span class="pre">lance</span></code> can be used (which would create
+<code class="docutils literal notranslate"><span class="pre">pandas.read_lance</span></code> or <code class="docutils literal notranslate"><span class="pre">DataFrame.to_lance</span></code>. But if a new <code class="docutils literal notranslate"><span class="pre">csv</span></code> reader based in the
+Arrow2 Rust implementation, the guidelines can recommend to use <code class="docutils literal notranslate"><span class="pre">csv_arrow2</span></code> to
+create <code class="docutils literal notranslate"><span class="pre">pandas.read_csv_arrow2</span></code>, etc.</p>
+<p><strong>Existence and naming of parameters</strong>, since many connectors are likely to provide
+similar features, like loading only a subset of columns in the data, or dealing
+with paths. Examples of recommendations to connector developers could be:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">columns</span></code>: Use this argument to let the user load a subset of columns. Allow a
+list or tuple.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">path</span></code>: Use this argument if the dataset is a file in the file disk. Allow a string,
+a <code class="docutils literal notranslate"><span class="pre">pathlib.Path</span></code> object, or a file descriptor. For a string object, allow URLs that
+will be automatically download, compressed files that will be automatically
+uncompressed, etc. Specific libraries can be recommended to deal with those in an
+easier and more consistent way.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">schema</span></code>: For datasets that don’t have a schema (e.g. <code class="docutils literal notranslate"><span class="pre">csv</span></code>), allow providing an
+Apache Arrow schema instance, and automatically infer types if not provided.</p></li>
+</ul>
+<p>Note that the above are only examples of guidelines for illustration, and not
+a proposal of the guidelines, which would be developed independently after this
+PDEP is approved.</p>
+<p><strong>Connector registry and documentation</strong>. To simplify the discovery of connectors
+and its documentation, connector developers can be encourage to register their
+projects in a central location, and to use a standard structure for documentation.
+This would allow the creation of a unified website to find the available
+connectors, and their documentation. It would also allow to customize the
+documentation for specific implementations, and include their final API.</p>
+</section>
+</section>
+<section id="connector-examples">
+<h3>Connector examples<a class="headerlink" href="#connector-examples" title="Link to this heading">#</a></h3>
+<p>This section lists specific examples of connectors that could immediately
+benefit from this proposal.</p>
+<p><strong>PyArrow</strong> currently provides <code class="docutils literal notranslate"><span class="pre">Table.from_pandas</span></code> and <code class="docutils literal notranslate"><span class="pre">Table.to_pandas</span></code>.
+With the new interface, it could also register <code class="docutils literal notranslate"><span class="pre">DataFrame.from_pyarrow</span></code>
+and <code class="docutils literal notranslate"><span class="pre">DataFrame.to_pyarrow</span></code>, so pandas users can use the converters with
+the interface they are used to, when PyArrow is installed in the environment.
+Better integration with PyArrow tables was discussed in
+<a class="reference external" href="https://github.com/pandas-dev/pandas/issues/51760">#51760</a>.</p>
+<p><em>Current API</em>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pyarrow</span><span class="o">.</span><span class="n">Table</span><span class="o">.</span><span class="n">from_pandas</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">to_pandas</span><span class="p">()</span>
+                               <span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;my_col &gt; 0&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+<p><em>Proposed API</em>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="n">pandas</span><span class="o">.</span><span class="n">read_pyarrow</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
+       <span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;my_col &gt; 0&#39;</span><span class="p">)</span>
+       <span class="o">.</span><span class="n">to_pyarrow</span><span class="p">())</span>
+</pre></div>
+</div>
+<p><strong>Polars</strong>, <strong>Vaex</strong> and other dataframe frameworks could benefit from
+third-party projects that make the interoperability with pandas use a
+more explicitly API. Integration with Polars was requested in
+<a class="reference external" href="https://github.com/pandas-dev/pandas/issues/47368">#47368</a>.</p>
+<p><em>Current API</em>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">polars</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">to_pandas</span><span class="p">()</span>
+                   <span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;my_col &gt; 0&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+<p><em>Proposed API</em>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="n">pandas</span><span class="o">.</span><span class="n">read_polars</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+       <span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;my_col &gt; 0&#39;</span><span class="p">)</span>
+       <span class="o">.</span><span class="n">to_polars</span><span class="p">())</span>
+</pre></div>
+</div>
+<p><strong>DuckDB</strong> provides an out-of-core engine able to push predicates before
+the data is loaded, making much better use of memory and significantly
+decreasing loading time. pandas, because of its eager nature is not able
+to easily implement this itself, but could benefit from a DuckDB loader.
+The loader can already be implemented inside pandas (it has already been
+proposed in <a class="reference external" href="https://github.com/pandas-dev/pandas/issues/45678">#45678</a>,
+or as a third-party extension with an arbitrary API. But this proposal would
+let the creation of a third-party extension with a standard and intuitive API:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pandas</span><span class="o">.</span><span class="n">read_duckdb</span><span class="p">(</span><span class="s2">&quot;SELECT *</span>
+                    <span class="n">FROM</span> <span class="s1">&#39;dataset.parquet&#39;</span>
+                    <span class="n">WHERE</span> <span class="n">my_col</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="s2">&quot;)</span>
+</pre></div>
+</div>
+<p><strong>Out-of-core algorithms</strong> push some operations like filtering or grouping
+to the loading of the data. While this is not currently possible, connectors
+implementing out-of-core algorithms could be developed using this interface.</p>
+<p><strong>Big data</strong> systems such as Hive, Iceberg, Presto, etc. could benefit
+from a standard way to load data to pandas. Also regular <strong>SQL databases</strong>
+that can return their query results as Arrow, would benefit from better
+and faster connectors than the existing ones based on SQL Alchemy and
+Python structures.</p>
+<p>Any other format, including <strong>domain-specific formats</strong> could easily
+implement pandas connectors with a clear and intuitive API.</p>
+</section>
+<section id="limitations">
+<h3>Limitations<a class="headerlink" href="#limitations" title="Link to this heading">#</a></h3>
+<p>The implementation of this proposal has some limitations discussed here:</p>
+<ul class="simple">
+<li><p><strong>Lack of support for multiple engines.</strong> The current pandas I/O API
+supports multiple engines for the same format (for the same function or
+method name). For example <code class="docutils literal notranslate"><span class="pre">read_csv(engine='pyarrow',</span> <span class="pre">...)</span></code>. Supporting
+engines requires that all engines for a particular format use the same
+signature (the same parameters), which is not ideal. Different connectors
+are likely to have different parameters and using <code class="docutils literal notranslate"><span class="pre">*args</span></code> and <code class="docutils literal notranslate"><span class="pre">**kwargs</span></code>
+provides users with a more complex and difficult experience. For this
+reason this proposal prefers that function and method names are unique
+instead of supporting an option for engines.</p></li>
+<li><p><strong>Lack of support for type checking of connectors.</strong> This PDEP proposes
+creating functions and methods dynamically, and those are not supported
+for type checking using stubs. This is already the case for other
+dynamically created components of pandas, such as custom accessors.</p></li>
+<li><p><strong>No improvements to the current I/O API</strong>. In the discussions of this
+proposal it has been considered to improve the current pandas I/O API to
+fix the inconsistency of using <code class="docutils literal notranslate"><span class="pre">read</span></code> / <code class="docutils literal notranslate"><span class="pre">to</span></code> (instead of for example
+<code class="docutils literal notranslate"><span class="pre">read</span></code> / <code class="docutils literal notranslate"><span class="pre">write</span></code>), avoid using <code class="docutils literal notranslate"><span class="pre">to_</span></code> prefixed methods for non-I/O
+operations, or using a dedicated namespace (e.g. <code class="docutils literal notranslate"><span class="pre">DataFrame.io</span></code>) for
+the connectors. All of these changes are out of scope for this PDEP.</p></li>
+</ul>
+</section>
+</section>
+<section id="future-plans">
+<h2>Future plans<a class="headerlink" href="#future-plans" title="Link to this heading">#</a></h2>
+<p>This PDEP is exclusively to support a better API for existing of future
+connectors. It is out of scope for this PDEP to implement changes to any
+connectors existing in the pandas code base.</p>
+<p>Some ideas for future discussion related to this PDEP include:</p>
+<ul class="simple">
+<li><p>Automatically loading of I/O plugins when pandas is imported.</p></li>
+<li><p>Removing from the pandas code base some of the least frequently used connectors,
+such as SAS, SPSS or Google BigQuery, and move them to third-party connectors
+registered with this interface.</p></li>
+<li><p>Discussing a better API for pandas connectors. For example, using <code class="docutils literal notranslate"><span class="pre">read_*</span></code>
+methods instead of <code class="docutils literal notranslate"><span class="pre">from_*</span></code> methods, renaming <code class="docutils literal notranslate"><span class="pre">to_*</span></code> methods not used as I/O
+connectors, using a consistent terminology like from/to, read/write, load/dump, etc.
+or using a dedicated namespace for connectors (e.g. <code class="docutils literal notranslate"><span class="pre">pandas.io</span></code> instead of the
+general <code class="docutils literal notranslate"><span class="pre">pandas</span></code> namespace).</p></li>
+<li><p>Implement as I/O connectors some of the formats supported by the <code class="docutils literal notranslate"><span class="pre">DataFrame</span></code>
+constructor.</p></li>
+</ul>
+</section>
+<section id="pdep-9-history">
+<h2>PDEP-9 History<a class="headerlink" href="#pdep-9-history" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>5 March 2023: Initial version</p></li>
+<li><p>30 May 2023: Major refactoring to use the pandas existing API,
+the dataframe interchange API and to make the user be explicit to load
+the plugins</p></li>
+<li><p>13 June 2023: The PDEP did not get any support after several iterations,
+and its been closed as rejected by the author</p></li>
+</ul>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  <!-- Previous / next buttons -->
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pdep-summary">PDEP Summary</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#current-state">Current state</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#supported-formats">Supported formats</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#proposal">Proposal</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#proposal-implementation">Proposal implementation</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#user-api">User API</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#plugin-registration">Plugin registration</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#internal-api">Internal API</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#connector-guidelines">Connector guidelines</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#connector-examples">Connector examples</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#limitations">Limitations</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#future-plans">Future plans</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pdep-9-history">PDEP-9 History</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div class="tocsection sourcelink">
+    <a href="_sources/0009-io-extensions.md.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=365ca57ee442770a23c6"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=365ca57ee442770a23c6"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+  <p class="copyright">
+    
+      © Copyright 2023, Pandas.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item"><p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.14.3.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

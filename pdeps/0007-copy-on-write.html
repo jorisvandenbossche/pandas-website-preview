@@ -1,0 +1,871 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>PDEP-7: Consistent copy/view semantics in pandas with Copy-on-Write &#8212; Pandas Enhancement Proposals  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=362ab14a" />
+    <link rel="stylesheet" type="text/css" href="_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="_static/pandas.css?v=cd9ee792" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=365ca57ee442770a23c6" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=365ca57ee442770a23c6" />
+  <script src="_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=365ca57ee442770a23c6"></script>
+
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/design-tabs.js?v=36754332"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '0007-copy-on-write';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+<header>
+  <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+  <div class="container">
+  <a class="navbar-brand" href="../."><img alt="" src="../static/img/pandas_white.svg"></a>
+  <div class="navbar-collapse collapse" id="nav-content">
+    <ul class="navbar-nav ms-auto">
+      <li class="nav-item">
+          <a class="nav-link" href="../about/roadmap.html">Back to the PDEP index</a>
+      </li>
+    </ul>
+  </div>
+  </div>
+  </nav>
+  </header>
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          <div class="navbar-item"><nav class="navbar-nav">
+  <p class="sidebar-header-items__title"
+     role="heading"
+     aria-level="1"
+     aria-label="Site Navigation">
+    Site Navigation
+  </p>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="0001-purpose-and-guidelines.html">
+                        PDEP-1: Purpose and guidelines
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="0004-consistent-to-datetime-parsing.html">
+                        PDEP-4: Consistent datetime parsing
+                      </a>
+                    </li>
+                
+  </ul>
+</nav></div>
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">PDEP-7:...</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="pdep-7-consistent-copy-view-semantics-in-pandas-with-copy-on-write">
+<h1>PDEP-7: Consistent copy/view semantics in pandas with Copy-on-Write<a class="headerlink" href="#pdep-7-consistent-copy-view-semantics-in-pandas-with-copy-on-write" title="Link to this heading">#</a></h1>
+<ul class="simple">
+<li><p>Created: July 2021</p></li>
+<li><p>Status: Accepted</p></li>
+<li><p>Discussion: <a class="reference external" href="https://github.com/pandas-dev/pandas/issues/36195">#36195</a></p></li>
+<li><p>Author: <a class="reference external" href="https://github.com/jorisvandenbossche">Joris Van den Bossche</a></p></li>
+<li><p>Revision: 1</p></li>
+</ul>
+<section id="abstract">
+<h2>Abstract<a class="headerlink" href="#abstract" title="Link to this heading">#</a></h2>
+<p>Short summary of the proposal:</p>
+<ol class="arabic simple">
+<li><p>The result of <em>any</em> indexing operation (subsetting a DataFrame or Series in any way,
+i.e. including accessing a DataFrame column as a Series) or any method returning a
+new DataFrame or Series, always <em>behaves as if</em> it were a copy in terms of user
+API.</p></li>
+<li><p>We implement Copy-on-Write (as implementation detail). This way, we can actually use
+views as much as possible under the hood, while ensuring the user API behaves as a
+copy.</p></li>
+<li><p>As a consequence, if you want to modify an object (DataFrame or Series), the only way
+to do this is to directly modify that object itself .</p></li>
+</ol>
+<p>This addresses multiple aspects: 1) a clear and consistent user API (a clear rule: <em>any</em>
+subset or returned series/dataframe <strong>always</strong> behaves as a copy of the original, and
+thus never modifies the original) and 2) improving performance by avoiding excessive
+copies (e.g. a chained method workflow would no longer return an actual data copy at each
+step).</p>
+<p>Because every single indexing step behaves as a copy, this also means that with this
+proposal, “chained assignment” (with multiple setitem steps) will <em>never</em> work and
+the <code class="docutils literal notranslate"><span class="pre">SettingWithCopyWarning</span></code> can be removed.</p>
+</section>
+<section id="background">
+<h2>Background<a class="headerlink" href="#background" title="Link to this heading">#</a></h2>
+<p>pandas’ current behavior on whether indexing returns a view or copy is confusing. Even
+for experienced users, it’s hard to tell whether a view or copy will be returned (see
+below for a summary). We’d like to provide an API that is consistent and sensible about
+returning views vs. copies.</p>
+<p>We also care about performance. Returning views from indexing operations is faster and
+reduces memory usage. The same is true for several methods that don’t modify the data
+such as setting/resetting the index, renaming columns, etc. that can be used in a method
+chaining workflow and currently return a new copy at each step.</p>
+<p>Finally, there are API / usability issues around views. It can be challenging to know
+the user’s intent in operations that modify a subset of a DataFrame (column and/or row
+selection), like:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;A&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="s2">&quot;B&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="s2">&quot;C&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df2</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df2</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df2</span><span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;A&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<p>Did the user intend to modify <code class="docutils literal notranslate"><span class="pre">df</span></code> when they modified <code class="docutils literal notranslate"><span class="pre">df2</span></code> (setting aside issues with
+the current implementation)? In other words, if we had a perfectly consistent world
+where indexing the columns always returned views or always returned a copy, does the
+code above imply that the user wants to mutate <code class="docutils literal notranslate"><span class="pre">df</span></code>?</p>
+<p>There are two possible behaviours the user might intend:</p>
+<ol class="arabic simple">
+<li><p>Case 1: I know my subset might be a view of the original and I want to modify the
+original as well.</p></li>
+<li><p>Case 2: I just want to modify the subset without modifying the original.</p></li>
+</ol>
+<p>Today, pandas’ inconsistency means <em>neither</em> of these workflows is really possible. The
+first is difficult, because indexing operations often (though not always) return copies,
+and even when a view is returned you sometimes get a <code class="docutils literal notranslate"><span class="pre">SettingWithCopyWarning</span></code> when
+mutating. The second is somewhat possible, but requires many defensive copies (to avoid
+<code class="docutils literal notranslate"><span class="pre">SettingWithCopyWarning</span></code>, or to ensure that you have a copy when a view <em>was</em> returned).</p>
+</section>
+<section id="proposal">
+<h2>Proposal<a class="headerlink" href="#proposal" title="Link to this heading">#</a></h2>
+<p>For these reasons (consistency, performance, code clarity), this PDEP proposes the
+following changes:</p>
+<ol class="arabic simple">
+<li><p>The result of <em>any</em> indexing operation (subsetting a DataFrame or Series in any way,
+i.e. including accessing a DataFrame column as a Series) or any method returning a
+new DataFrame or Series, always <em>behaves as if</em> it were a copy in terms of user
+API.</p></li>
+<li><p>We implement Copy-on-Write. This way, we can actually use views as much as possible
+under the hood, while ensuring the user API behaves as a copy.</p></li>
+</ol>
+<p>The intent is to capture the performance benefits of views as much as possible, while
+providing consistent and clear behaviour to the user. This essentially makes returning
+views an internal optimization, without the user needing to know if the specific
+indexing operation would return a view or a copy. The new rule would be simple: any
+series/dataframe derived from another series/dataframe, through an indexing operation or
+a method, always behaves as a copy of the original series/dataframe.</p>
+<p>The mechanism to ensure this consistent behaviour, Copy-on-Write, would entail the
+following: the setitem operation (i.e. <code class="docutils literal notranslate"><span class="pre">df[..]</span> <span class="pre">=</span> <span class="pre">..</span></code> or <code class="docutils literal notranslate"><span class="pre">df.loc[..]</span> <span class="pre">=</span> <span class="pre">..</span></code> or
+<code class="docutils literal notranslate"><span class="pre">df.iloc[..]</span> <span class="pre">=</span> <span class="pre">..</span></code>, or equivalent for Series) would check if the data that is being
+modified is a view on another dataframe (or is being viewed by another dataframe). If it
+is, then we would copy the data before mutating.</p>
+<p>Taking the example from above, if the user wishes to not mutate the parent, we no longer
+require a defensive copy just to avoid a <code class="docutils literal notranslate"><span class="pre">SettingWithCopyWarning</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Case 2: The user does not want mutating df2 to mutate the parent df, via CoW</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;A&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="s2">&quot;B&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="s2">&quot;C&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]})</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">df2</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">]]</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">df2</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df2</span><span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;A&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>  <span class="c1"># df was not mutated</span>
+<span class="mi">2</span>
+</pre></div>
+</div>
+<p>On the other hand, if the user actually wants to modify the original df, they can no
+longer rely on the fact that <code class="docutils literal notranslate"><span class="pre">df2</span></code> could be a view, as mutating a subset would now never
+mutate the parent. The only way to modify the original df is by combining all indexing
+steps in a single indexing operation on the original (no “chained” setitem):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Case 1: user wants mutations of df2 to be reflected in df -&gt; no longer possible</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;A&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="s2">&quot;B&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="s2">&quot;C&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]})</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">df2</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">]]</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">df2</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df2</span><span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;A&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># mutating df2 will not mutate df</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;A&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># need to directly mutate df instead</span>
+</pre></div>
+</div>
+<section id="this-proposal-also-extends-to-methods">
+<h3>This proposal also extends to methods<a class="headerlink" href="#this-proposal-also-extends-to-methods" title="Link to this heading">#</a></h3>
+<p>In principle, there’s nothing special about indexing when it comes to defensive copying.
+<em>Any</em> method that returns a new series/dataframe without altering existing data (rename,
+set_index, assign, dropping columns, etc.) currently returns a copy by default and is a
+candidate for returning a view:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df2</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="nb">str</span><span class="o">.</span><span class="n">lower</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df3</span> <span class="o">=</span> <span class="n">df2</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now, generally, pandas users won’t expect <code class="docutils literal notranslate"><span class="pre">df2</span></code> or <code class="docutils literal notranslate"><span class="pre">df3</span></code> to be a view such that mutating
+<code class="docutils literal notranslate"><span class="pre">df2</span></code> or <code class="docutils literal notranslate"><span class="pre">df3</span></code> would mutate <code class="docutils literal notranslate"><span class="pre">df</span></code>. Copy-on-Write allows us to also avoid
+unnecessary copies in methods such as the above (or in the variant using method chaining
+like <code class="docutils literal notranslate"><span class="pre">df.rename(columns=str.lower).set_index(&quot;a&quot;)</span></code>).</p>
+</section>
+<section id="propagating-mutation-forwards">
+<h3>Propagating mutation forwards<a class="headerlink" href="#propagating-mutation-forwards" title="Link to this heading">#</a></h3>
+<p>Thus far we have considered the (more common) case of taking a subset, mutating the
+subset, and how that should affect the parent. What about the other direction, where the
+parent is mutated?</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;A&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="s2">&quot;B&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df2</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="s2">&quot;A&quot;</span><span class="p">]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df2</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>  <span class="c1"># what is this value?</span>
+</pre></div>
+</div>
+<p>Given that <code class="docutils literal notranslate"><span class="pre">df2</span></code> is <em>considered</em> as a copy of df under this proposal (i.e. behaves as a
+copy), also mutating the parent <code class="docutils literal notranslate"><span class="pre">df</span></code> will not mutate the subset <code class="docutils literal notranslate"><span class="pre">df2</span></code>.</p>
+</section>
+<section id="when-do-mutations-propagate-to-other-objects-and-when-not">
+<h3>When do mutations propagate to other objects and when not?<a class="headerlink" href="#when-do-mutations-propagate-to-other-objects-and-when-not" title="Link to this heading">#</a></h3>
+<p>This proposal basically means that mutations <em>never</em> propagate to <em>other</em> objects (as
+would happen with views). The only way to modify a DataFrame or Series is to modify the
+object itself directly.</p>
+<p>But let’s illustrate this in Python terms. Consider that we have a DataFrame <code class="docutils literal notranslate"><span class="pre">df1</span></code>, and we
+assign that to another name <code class="docutils literal notranslate"><span class="pre">df2</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df1</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;A&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="s2">&quot;B&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df2</span> <span class="o">=</span> <span class="n">df1</span>
+</pre></div>
+</div>
+<p>Although we have now two variables (<code class="docutils literal notranslate"><span class="pre">df1</span></code> and <code class="docutils literal notranslate"><span class="pre">df2</span></code>), this assignment follows the standard
+python semantics, and both names are pointing to the same object (“df1 and df2 are
+<em>identical</em>”):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">id</span><span class="p">(</span><span class="n">df1</span><span class="p">)</span> <span class="o">==</span> <span class="nb">id</span><span class="p">(</span><span class="n">df2</span><span class="p">)</span>  <span class="c1"># or: df1 is df2</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>Thus, if you modify DataFrame <code class="docutils literal notranslate"><span class="pre">df2</span></code>, this is also reflected in the other variable <code class="docutils literal notranslate"><span class="pre">df1</span></code>, and
+the other way around (since it’s the same object):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df1</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+<span class="go">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df2</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df1</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+<span class="go">10</span>
+</pre></div>
+</div>
+<p>In summary, modifications are only “propagated” between <em>identical</em> objects (not just
+equal (<code class="docutils literal notranslate"><span class="pre">==</span></code>), but identical (<code class="docutils literal notranslate"><span class="pre">is</span></code>) in python terms, see
+<a class="reference external" href="https://docs.python.org/3/reference/expressions.html#is">docs</a>). Propagation is not
+really the proper term, since there is only one object that was modified.</p>
+<p>However, when in some way creating a new object (even though it might be a DataFrame
+with the same data, and thus be an “equal” DataFrame):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df1</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;A&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="s2">&quot;B&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df2</span> <span class="o">=</span> <span class="n">df1</span><span class="p">[:]</span>  <span class="c1"># or df1.loc[...] with some indexer</span>
+</pre></div>
+</div>
+<p>Those objects are no longer identical:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">id</span><span class="p">(</span><span class="n">df1</span><span class="p">)</span> <span class="o">==</span> <span class="nb">id</span><span class="p">(</span><span class="n">df2</span><span class="p">)</span>  <span class="c1"># or df1 is df2</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+<p>And thus modifications to one will not propagate to the other:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df1</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+<span class="go">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df2</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df1</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>  <span class="c1"># not changed</span>
+<span class="go">1</span>
+</pre></div>
+</div>
+<p>Currently, any getitem indexing operation returns <em>new</em> objects, and also almost all
+DataFrame/Series methods return a <em>new</em> object (except with <code class="docutils literal notranslate"><span class="pre">inplace=True</span></code> in some
+cases), and thus follow the above logic of never modifying its parent/child DataFrame or
+Series (using the lazy Copy-on-Write mechanism where possible).</p>
+</section>
+</section>
+<section id="copy-view-behaviour-in-numpy-versus-pandas">
+<h2>Copy / view behaviour in NumPy versus pandas<a class="headerlink" href="#copy-view-behaviour-in-numpy-versus-pandas" title="Link to this heading">#</a></h2>
+<p>NumPy has the concept of “views” (an array that shares data with another array, viewing
+the same memory, see e.g.
+<a class="reference external" href="https://scipy-cookbook.readthedocs.io/items/ViewsVsCopies.html">this explanation</a> for
+more details). Typically you create views as a slice of another array. But other
+indexing methods, often called “fancy indexing”, do not return views but copies: using a
+list of indices or a boolean mask.</p>
+<p>Pandas, being built on NumPy, uses those concepts, and also exposes the behaviour
+consequences to its users. This basically means that pandas users, to understand the
+details of how indexing works, also need to understand those view / fancy indexing
+concepts of numpy.</p>
+<p>However, because DataFrames are not an array, the copy/view rules still differ from
+NumPy’s rules with current pandas. Slicing rows generally gives a view (following
+NumPy), but slicing columns doesn’t always give a view (this could be changed to match
+NumPy however, see “Alternatives” 1b below). Fancy indexing rows (e.g. with a list of
+(positional) labels) gives a copy, but fancy indexing columns <em>could</em> give a view
+(currently this gives a copy as well, but one of the “Alternatives” (1b) is to have this
+always return a view).</p>
+<p>The proposal in this document is to decouple the pandas user-facing behaviour from those
+NumPy concepts. Creating a subset of a DataFrame with a slice or with a mask would
+behave in a similar way for the user (both return a new object and behave as a copy of
+the original). We still use the concept of views internally in pandas to optimize the
+implementation, but this becomes hidden from the user.</p>
+</section>
+<section id="alternatives">
+<h2>Alternatives<a class="headerlink" href="#alternatives" title="Link to this heading">#</a></h2>
+<p>The <a class="reference external" href="https://docs.google.com/document/d/1csGE4qigPR2vzmU2--jwURn3sK5k5eVewinxd8OUPk0/edit">original document</a> and GitHub issue (<a class="reference external" href="https://github.com/pandas-dev/pandas/issues/36195">Proposal for future copy / view semantics in indexing operations - #36195</a>) discussed several options for making the copy/view situation more consistent and clear:</p>
+<ol class="arabic simple">
+<li><p><strong>Well-Defined copy/view rules:</strong> ensure we have more consistent rules about which
+operations result in a copy and which in a view, and then views result in mutating
+the parent, copies not.
+a. A minimal change would be to officialize the current behaviour. This comes down to
+fixing some bugs and clearly documenting and testing which operations are views,
+and which are copies.
+b. An alternative would be to simplify the set of rules. For example: selecting
+columns is always a view, subsetting rows is always a copy. Or: selecting columns
+is always a view, subsetting rows as a slice is a view otherwise always a copy.</p></li>
+<li><p><strong>Copy-on-Write</strong>: The setitem operation would check if it’s a view on another
+dataframe. If it is, then we would copy our data before mutating. (i.e. this
+proposal)</p></li>
+<li><p><strong>Error-on-Write</strong>: The setitem operation would check if it’s a subset of another
+dataframe (both view of copy). Only rather than copying in case of a view we would
+raise an exception telling the user to either copy the data with
+<code class="docutils literal notranslate"><span class="pre">.copy_if_needed()</span></code> (name TBD) or mark the frame as “a mutable view” with
+<code class="docutils literal notranslate"><span class="pre">.as_mutable_view()</span></code> (name TBD).</p></li>
+</ol>
+<p>This document basically proposes an extended version of option 2 (Copy-on-Write). Some
+arguments in favor of Copy-on-Write compared to the other options:</p>
+<ul>
+<li><p>Copy-on-Write will improve the copy/view efficiency of <em>methods</em> (e.g. rename,
+(re)set_index, drop columns, etc. See section above). This will result in
+lower memory usage and better performance.</p></li>
+<li><p>This proposal can also be seen as a clear “well-defined rule”. Using Copy-on-Write
+under the hood is an implementation detail to delay the actual copy until it is
+needed. The rule of “always copy” is the simplest “well-defined rule” we can get.</p>
+<p>Other “well-defined rule” ideas above would always include some specific cases (and
+deviations from the NumPy rules). And even with clear rules a user still needs to know
+the details of those rules to understand that <code class="docutils literal notranslate"><span class="pre">df['a'][df['b']</span> <span class="pre">&lt;</span> <span class="pre">0]</span> <span class="pre">=</span> <span class="pre">0</span></code> or
+<code class="docutils literal notranslate"><span class="pre">df[df['b']</span> <span class="pre">&lt;</span> <span class="pre">0]['a']</span> <span class="pre">=</span> <span class="pre">0</span></code> does something differently (switched order of column/row
+indexing: the first mutates df (if selecting a column is a view) and the second
+doesn’t). While with the “always copy” rule with Copy-on-Write, neither of those
+examples will work to update <code class="docutils literal notranslate"><span class="pre">df</span></code>.</p>
+</li>
+</ul>
+<p>On the other hand, the proposal in this document does not give the user control over
+whether a subset should be a view (when possible) that mutates the parent when being
+mutated. The only way to modify the parent dataframe is with a direct indexing operation
+on this dataframe itself.</p>
+<p>See the GitHub comment with some more detailed argumentation:
+<a class="github reference external" href="https://github.com/pandas-dev/pandas/issues/36195#issuecomment-786654449">pandas-dev/pandas#36195</a></p>
+</section>
+<section id="disadvantages">
+<h2>Disadvantages<a class="headerlink" href="#disadvantages" title="Link to this heading">#</a></h2>
+<p>Other than the fact that this proposal would result in a backwards incompatible,
+breaking change in behaviour (see next section), there are some other potential
+disadvantages:</p>
+<ul class="simple">
+<li><p>Deviation from NumPy: NumPy uses the copy and view concepts, while in this proposal
+views would basically not exist anymore in pandas (for the user, at least; we would
+still use it internally as an implementation detail)</p>
+<ul>
+<li><p>But as a counter argument: many pandas users are probably not familiar with those
+concepts, and pandas already deviates from the exact rules in NumPy.</p></li>
+</ul>
+</li>
+<li><p>Performance cost of indexing and methods becomes harder to predict: because the copy
+of the data doesn’t happen at the moment when actually creating the new object, but
+can happen at a later stage when modifying either the parent or child object, it
+becomes less transparent about when pandas copies data (but in general we should copy
+less often). This is somewhat mitigated because Copy-on-Write will only copy the columns
+that are mutated. Unrelated columns won’t get copied.</p></li>
+<li><p>Increased memory usage for some use cases: while the majority of use cases will
+see an improvement in memory usage with this proposal, there are a few use
+cases where this might not be the case. Specifically in cases where pandas currently
+does return a view (e.g. slicing rows) and in the case you are fine with (or don’t care
+about) the current behaviour of it being a view when mutating that subset (i.e.
+mutating the sliced subset also mutates the parent dataframe), in such a case the
+proposal would introduce a new copy compared to the current behaviour. There is a
+workaround for this though: the copy is not needed if the previous object goes out
+of scope, e.g. the variable is reassigned to something else.</p></li>
+</ul>
+</section>
+<section id="backward-compatibility">
+<h2>Backward compatibility<a class="headerlink" href="#backward-compatibility" title="Link to this heading">#</a></h2>
+<p>The proposal in this document is clearly a backwards incompatible change that breaks
+existing behaviour. Because of the current inconsistencies and subtleties around views
+vs. copies and mutation, it would be difficult to change anything without breaking
+changes. The current proposal is not the proposal with the minimal changes, though. A
+change like this will in any case need to be accompanied with a major version bump (for
+example pandas 3.0).</p>
+<p>Doing a traditional deprecation cycle that lives in several minor feature releases will
+be too noisy. Indexing is too common an operation to include a warning (even if we limit
+it to just those operations that previously returned views). However, this proposal is
+already implemented and thus available. Users can opt-in and test their code (this is
+possible starting with version 1.5 with <code class="docutils literal notranslate"><span class="pre">pd.options.mode.copy_on_write</span> <span class="pre">=</span> <span class="pre">True</span></code>).</p>
+<p>Further we will add a warning mode for pandas 2.2 that raises warnings for all cases that
+will change behaviour under the Copy-on-Write proposal. We can
+provide a clearly documented upgrade path to first enable the warnings, fix all
+warnings, and then enable the Copy-on-Write mode and ensure your code is still working,
+and then finally upgrade to the new major release.</p>
+</section>
+<section id="implementation">
+<h2>Implementation<a class="headerlink" href="#implementation" title="Link to this heading">#</a></h2>
+<p>The implementation is available since pandas 1.5 (and significantly improved starting
+with pandas 2.0). It uses weakrefs to keep track of whether the
+data of a Dataframe/Series are viewing the data of another (pandas) object or are being
+viewed by another object. This way, whenever the series/dataframe gets modified, we can
+check if its data first needs to be copied before mutating it
+(see <a class="reference external" href="https://pandas.pydata.org/docs/development/copy_on_write.html">here</a>).</p>
+<p>To test the implementation and experiment with the new behaviour, you can
+enable it with the following option:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pd</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">mode</span><span class="o">.</span><span class="n">copy_on_write</span> <span class="o">=</span> <span class="kc">True</span>
+</pre></div>
+</div>
+<p>after importing pandas (or setting the <code class="docutils literal notranslate"><span class="pre">PANDAS_COPY_ON_WRITE=1</span></code> environment variable
+before importing pandas).</p>
+</section>
+<section id="concrete-examples">
+<h2>Concrete examples<a class="headerlink" href="#concrete-examples" title="Link to this heading">#</a></h2>
+<section id="chained-assignment">
+<h3>Chained assignment<a class="headerlink" href="#chained-assignment" title="Link to this heading">#</a></h3>
+<p>Consider a “classic” case of chained indexing, which was the original motivation for the SettingWithCopy warning:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;B&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">][</span><span class="s1">&#39;B&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span>
+</pre></div>
+</div>
+<p>That is roughly equivalent to</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df2</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;B&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">]</span>  <span class="c1"># Copy under NumPy&#39;s rules</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df2</span><span class="p">[</span><span class="s1">&#39;B&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span>  <span class="c1"># Update (the copy) df2, df not changed</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">del</span> <span class="n">df2</span>  <span class="c1"># All references to df2 are lost, goes out of scope</span>
+</pre></div>
+</div>
+<p>And so <code class="docutils literal notranslate"><span class="pre">df</span></code> is not modified. For this reason, the SettingWithCopyWarning was introduced.</p>
+<p><em>With this proposal</em>, any result of an indexing operation behaves as a copy
+(Copy-on-Write), and thus chained assignment will <em>never</em> work. Given that there is then
+no ambiguity, the idea is to drop the warning.</p>
+<p>The above example is a case where chained assignment doesn’t work with current pandas.
+But there are of course also patterns with chained assignment that currently <em>do</em> work
+and are used. <em>With this proposal</em>, any chained assignment will not work, and so those
+cases will stop working (e.g. the case above but switching the order):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;B&#39;</span><span class="p">][</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;B&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="go"># or</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;B&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">:</span><span class="mi">5</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span>
+</pre></div>
+</div>
+<p>These cases will raise a warning <code class="docutils literal notranslate"><span class="pre">ChainedAssignmentError</span></code>, because they can never
+accomplish what the user intended. There will be false-positive cases when these
+operations are triggered from Cython, because Cython uses a different reference counting
+mechanism. These cases should be rare, since calling pandas code from Cython does not
+have any performance benefits.</p>
+</section>
+<section id="filtered-dataframe">
+<h3>Filtered dataframe<a class="headerlink" href="#filtered-dataframe" title="Link to this heading">#</a></h3>
+<p>A typical example where the current SettingWithCopyWarning becomes annoying is when
+filtering a DataFrame (which always already returns a copy):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;A&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="s2">&quot;B&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="s2">&quot;C&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df_filtered</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df_filtered</span><span class="p">[</span><span class="s2">&quot;new_column&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="go">SettingWithCopyWarning:</span>
+<span class="go">A value is trying to be set on a copy of a slice from a DataFrame.</span>
+<span class="go">Try using .loc[row_indexer,col_indexer] = value instead</span>
+</pre></div>
+</div>
+<p>If you then modify your filtered dataframe (e.g. adding a column), you get the
+unnecessary SettingWithCopyWarning (with confusing message). The only way to get rid of
+the warning is by doing a defensive copy (<code class="docutils literal notranslate"><span class="pre">df_filtered</span> <span class="pre">=</span> <span class="pre">df[df[&quot;A&quot;]</span> <span class="pre">&gt;</span> <span class="pre">1].copy()</span></code>, which
+results in copying the data twice in the current implementation, Copy-on-Write would
+not require <code class="docutils literal notranslate"><span class="pre">.copy()</span></code> anymore).</p>
+<p><em>With this proposal</em>, the filtered dataframe is never a view and the above
+workflow would work as expected without warning (and thus without needing the extra
+copy).</p>
+</section>
+<section id="modifying-a-series-from-dataframe-column">
+<h3>Modifying a Series (from DataFrame column)<a class="headerlink" href="#modifying-a-series-from-dataframe-column" title="Link to this heading">#</a></h3>
+<p><em>Currently</em>, accessing a column of a DataFrame as a Series is one of the few cases that
+is actually guaranteed to always be a view:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;A&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="s2">&quot;B&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="s2">&quot;C&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>   <span class="c1"># will also modify df (but no longer with this proposal)</span>
+</pre></div>
+</div>
+<p><em>With this proposal</em>, any indexing operation results in a copy, so also accessing a
+column as a Series (in practice, it will still be a view of course, but behave as a copy
+through Copy-on-Write). In the above example, mutating <code class="docutils literal notranslate"><span class="pre">s</span></code> will no longer modify the
+parent <code class="docutils literal notranslate"><span class="pre">df</span></code>.</p>
+<p>This situation is similar as the “chained assignment” case above, except with
+an explicit intermediate variable. To actually change the original DataFrame,
+the solution is the same: mutate directly the DataFrame in a single step.
+For example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;A&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+</pre></div>
+</div>
+</section>
+<section id="shallow-copies">
+<h3>“Shallow” copies<a class="headerlink" href="#shallow-copies" title="Link to this heading">#</a></h3>
+<p><em>Currently</em>, it is possible to create a “shallow” copy of a DataFrame with
+<code class="docutils literal notranslate"><span class="pre">copy(deep=False)</span></code>. This creates a new DataFrame object but without copying the
+underlying index and data. Any changes to the data of the original will be reflected in
+the shallow copy (and vice versa). See the
+<a class="reference external" href="https://pandas.pydata.org/pandas-docs/version/1.5/reference/api/pandas.DataFrame.copy.html">docs</a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;A&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="s2">&quot;B&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="s2">&quot;C&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df2</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df2</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>   <span class="c1"># will also modify df (but no longer with this proposal)</span>
+</pre></div>
+</div>
+<p><em>With this proposal</em>, this kind of shallow copy is no longer possible. Only “identical”
+objects (in Python terms: <code class="docutils literal notranslate"><span class="pre">df2</span> <span class="pre">is</span> <span class="pre">df</span></code>) can share data without triggering Copy-on-Write.
+A shallow copy will rather become a “delayed” copy through Copy-on-Write.</p>
+<p>See
+<a class="reference external" href="https://github.com/pandas-dev/pandas/issues/36195#issuecomment-830579242">#36195 (comment)</a>
+for a more detailed comment on this.</p>
+</section>
+<section id="methods-returning-a-new-dataframe-with-the-same-data">
+<h3>Methods returning a new DataFrame with the same data<a class="headerlink" href="#methods-returning-a-new-dataframe-with-the-same-data" title="Link to this heading">#</a></h3>
+<p>This example is already shown above as well, but so <em>currently</em> almost all methods on a
+Series/DataFrame by default return a new object that is a copy of the original data:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df2</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="nb">str</span><span class="o">.</span><span class="n">lower</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df3</span> <span class="o">=</span> <span class="n">df2</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In the above example, df2 holds a copy of the data of df, and df3 holds a copy of the
+data of df2. Mutating any of those DataFrames would not modify the parent dataframe.</p>
+<p><em>With this proposal</em>, those methods would continue to return new objects, but would use
+the shallow copy mechanism with Copy-on-Write so that in practice, those methods don’t
+need to copy the data at each step, while preserving the current behaviour.</p>
+</section>
+<section id="series-and-dataframe-constructors">
+<h3>Series and DataFrame constructors<a class="headerlink" href="#series-and-dataframe-constructors" title="Link to this heading">#</a></h3>
+<p><em>Currently</em>, the Series and DataFrame constructors don’t always copy the input
+(depending on the type of the input). For example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s2</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>   <span class="c1"># will also modify the parent Series s</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span>
+<span class="go">0	0  # &lt;-- modified</span>
+<span class="go">1	2</span>
+<span class="go">2	3</span>
+<span class="go">dtype: int64</span>
+</pre></div>
+</div>
+<p><em>With this proposal</em>, we can also use the shallow copy with Copy-on-Write approach <em>by
+default</em> in the constructors. This would mean that by default, a new Series or DataFrame
+(like <code class="docutils literal notranslate"><span class="pre">s2</span></code> in the above example) would not modify the data from which it is being
+constructed (when being modified itself), honoring the proposed rules.</p>
+</section>
+</section>
+<section id="more-background-current-behaviour-of-views-vs-copy">
+<h2>More background: Current behaviour of views vs copy<a class="headerlink" href="#more-background-current-behaviour-of-views-vs-copy" title="Link to this heading">#</a></h2>
+<p>To the best of our knowledge, indexing operations currently return views in the
+following cases:</p>
+<ul class="simple">
+<li><p>Selecting a single column (as a Series) out of a DataFrame is always a view
+(<code class="docutils literal notranslate"><span class="pre">df['a']</span></code>)</p></li>
+<li><p>Slicing columns from a DataFrame creating a subset DataFrame (<code class="docutils literal notranslate"><span class="pre">df[['a':'b']]</span></code> or
+<code class="docutils literal notranslate"><span class="pre">df.loc[:,</span> <span class="pre">'a':</span> <span class="pre">'b']</span></code>) is a view <em>if</em> the the original DataFrame consists of a
+single block (single dtype, consolidated) and <em>if</em> you are slicing (so not a list
+selection). In all other cases, getting a subset is always a copy.</p></li>
+<li><p>Selecting rows <em>can</em> return a view, when the row indexer is a <code class="docutils literal notranslate"><span class="pre">slice</span></code> object.</p></li>
+</ul>
+<p>Remaining operations (subsetting rows with a list indexer or boolean mask) in practice
+return a copy, and we will raise a SettingWithCopyWarning when the user tries to modify
+the subset.</p>
+</section>
+<section id="more-background-previous-attempts">
+<h2>More background: Previous attempts<a class="headerlink" href="#more-background-previous-attempts" title="Link to this heading">#</a></h2>
+<p>We’ve discussed this general issue before. <a class="github reference external" href="https://github.com/pandas-dev/pandas/issues/10954">pandas-dev/pandas#10954</a> and a few pull requests (<a class="github reference external" href="https://github.com/pandas-dev/pandas/pull/12036">pandas-dev/pandas#12036</a>, <a class="github reference external" href="https://github.com/pandas-dev/pandas/pull/11207">pandas-dev/pandas#11207</a>, <a class="github reference external" href="https://github.com/pandas-dev/pandas/pull/11500">pandas-dev/pandas#11500</a>).</p>
+</section>
+<section id="comparison-with-other-languages-libraries">
+<h2>Comparison with other languages / libraries<a class="headerlink" href="#comparison-with-other-languages-libraries" title="Link to this heading">#</a></h2>
+<section id="r">
+<h3>R<a class="headerlink" href="#r" title="Link to this heading">#</a></h3>
+<p>For the user, R has somewhat similar behaviour. Most R objects can be considered
+immutable, through “copy-on-modify”
+(<a class="reference external" href="https://adv-r.hadley.nz/names-values.html#copy-on-modify">https://adv-r.hadley.nz/names-values.html#copy-on-modify</a>).
+But in contrast to Python, in R this is a language feature, and any assignment (binding
+a variable to a new name) or passing as function argument will essentially create a
+“copy” (when mutating such an object, at that point the actual data get copied and
+rebind to the name):</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">x</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="m">1</span><span class="p">,</span><span class="w"> </span><span class="m">2</span><span class="p">,</span><span class="w"> </span><span class="m">3</span><span class="p">)</span>
+<span class="n">y</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">x</span>
+<span class="n">y</span><span class="p">[[</span><span class="m">1</span><span class="p">]]</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="m">10</span><span class="w">  </span><span class="c1"># does not modify x</span>
+</pre></div>
+</div>
+<p>While if you would do the above example in Python with a list, x and y are “identical”
+and mutating one will also mutate the other.</p>
+<p>As a consequence of this language behaviour, modifying a <code class="docutils literal notranslate"><span class="pre">data.frame</span></code> will not modify
+other data.frames that might share memory (before being copied with “copy-on-modify”).</p>
+</section>
+<section id="polars">
+<h3>Polars<a class="headerlink" href="#polars" title="Link to this heading">#</a></h3>
+<p>Polars (<a class="github reference external" href="https://github.com/pola-rs/polars">pola-rs/polars</a>) is a
+DataFrame library with a Python interface, mainly written in Rust on top of Arrow. It
+explicitly
+<a class="reference external" href="https://pola-rs.github.io/polars-book/user-guide/introduction.html#current-status">mentions</a>
+“Copy-on-Write” semantics as one its features.</p>
+<p>Based on some experiments, the user-facing behaviour of Polars seems similar to the behaviour
+described in this proposal (mutating a DataFrame/Series never mutates a parent/child
+object, and so chained assignment also doesn’t work)</p>
+</section>
+</section>
+<section id="pdep-7-history">
+<h2>PDEP-7 History<a class="headerlink" href="#pdep-7-history" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>July 2021: Initial version</p></li>
+<li><p>February 2023: Converted into a PDEP</p></li>
+</ul>
+<p>Note: this proposal has been discussed before it was turned into a PDEP. The main
+discussion happened in <a class="reference external" href="https://github.com/pandas-dev/pandas/issues/36195">GH-36195</a>.
+This document is modified from the original document discussing different options for
+clear copy/view semantics started by Tom Augspurger
+(<a class="reference external" href="https://docs.google.com/document/d/1csGE4qigPR2vzmU2--jwURn3sK5k5eVewinxd8OUPk0/edit">google doc</a>).</p>
+<p>Related mailing list discussion: <a class="reference external" href="https://t.co/vT5dOMhNjV?amp=1">https://mail.python.org/pipermail/pandas-dev/2021-July/001358.html</a></p>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  <!-- Previous / next buttons -->
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#abstract">Abstract</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#background">Background</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#proposal">Proposal</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#this-proposal-also-extends-to-methods">This proposal also extends to methods</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#propagating-mutation-forwards">Propagating mutation forwards</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#when-do-mutations-propagate-to-other-objects-and-when-not">When do mutations propagate to other objects and when not?</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#copy-view-behaviour-in-numpy-versus-pandas">Copy / view behaviour in NumPy versus pandas</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#alternatives">Alternatives</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#disadvantages">Disadvantages</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#backward-compatibility">Backward compatibility</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#implementation">Implementation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#concrete-examples">Concrete examples</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chained-assignment">Chained assignment</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#filtered-dataframe">Filtered dataframe</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#modifying-a-series-from-dataframe-column">Modifying a Series (from DataFrame column)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#shallow-copies">“Shallow” copies</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#methods-returning-a-new-dataframe-with-the-same-data">Methods returning a new DataFrame with the same data</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#series-and-dataframe-constructors">Series and DataFrame constructors</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#more-background-current-behaviour-of-views-vs-copy">More background: Current behaviour of views vs copy</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#more-background-previous-attempts">More background: Previous attempts</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#comparison-with-other-languages-libraries">Comparison with other languages / libraries</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#r">R</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#polars">Polars</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pdep-7-history">PDEP-7 History</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div class="tocsection sourcelink">
+    <a href="_sources/0007-copy-on-write.md.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=365ca57ee442770a23c6"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=365ca57ee442770a23c6"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+  <p class="copyright">
+    
+      © Copyright 2023, Pandas.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item"><p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.14.3.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

@@ -1,0 +1,559 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>PDEP-6: Ban upcasting in setitem-like operations &#8212; Pandas Enhancement Proposals  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=362ab14a" />
+    <link rel="stylesheet" type="text/css" href="_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="_static/pandas.css?v=cd9ee792" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=365ca57ee442770a23c6" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=365ca57ee442770a23c6" />
+  <script src="_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=365ca57ee442770a23c6"></script>
+
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/design-tabs.js?v=36754332"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '0006-ban-upcasting';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+<header>
+  <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+  <div class="container">
+  <a class="navbar-brand" href="../."><img alt="" src="../static/img/pandas_white.svg"></a>
+  <div class="navbar-collapse collapse" id="nav-content">
+    <ul class="navbar-nav ms-auto">
+      <li class="nav-item">
+          <a class="nav-link" href="../about/roadmap.html">Back to the PDEP index</a>
+      </li>
+    </ul>
+  </div>
+  </div>
+  </nav>
+  </header>
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          <div class="navbar-item"><nav class="navbar-nav">
+  <p class="sidebar-header-items__title"
+     role="heading"
+     aria-level="1"
+     aria-label="Site Navigation">
+    Site Navigation
+  </p>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="0001-purpose-and-guidelines.html">
+                        PDEP-1: Purpose and guidelines
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="0004-consistent-to-datetime-parsing.html">
+                        PDEP-4: Consistent datetime parsing
+                      </a>
+                    </li>
+                
+  </ul>
+</nav></div>
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">PDEP-6: Ban...</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="pdep-6-ban-upcasting-in-setitem-like-operations">
+<h1>PDEP-6: Ban upcasting in setitem-like operations<a class="headerlink" href="#pdep-6-ban-upcasting-in-setitem-like-operations" title="Link to this heading">#</a></h1>
+<ul class="simple">
+<li><p>Created: 23 December 2022</p></li>
+<li><p>Status: Accepted</p></li>
+<li><p>Discussion: <a class="reference external" href="https://github.com/pandas-dev/pandas/pull/50402">#39584</a></p></li>
+<li><p>Author: <a class="reference external" href="https://github.com/MarcoGorelli">Marco Gorelli</a> (<a class="reference external" href="https://github.com/pandas-dev/pandas/issues/39584">original issue</a> by <a class="reference external" href="https://github.com/jorisvandenbossche">Joris Van den Bossche</a>)</p></li>
+<li><p>Revision: 1</p></li>
+</ul>
+<section id="abstract">
+<h2>Abstract<a class="headerlink" href="#abstract" title="Link to this heading">#</a></h2>
+<p>The suggestion is that setitem-like operations would
+not change a <code class="docutils literal notranslate"><span class="pre">Series</span></code>’ dtype (nor that of a <code class="docutils literal notranslate"><span class="pre">DataFrame</span></code>’s column).</p>
+<p>Current behaviour:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">ser</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int64&#39;</span><span class="p">)</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="n">ser</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;potage&#39;</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="n">ser</span>  <span class="c1"># dtype changed to &#39;object&#39;!</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">3</span><span class="p">]:</span>
+<span class="mi">0</span>         <span class="mi">1</span>
+<span class="mi">1</span>         <span class="mi">2</span>
+<span class="mi">2</span>    <span class="n">potage</span>
+<span class="n">dtype</span><span class="p">:</span> <span class="nb">object</span>
+</pre></div>
+</div>
+<p>Suggested behaviour:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">ser</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="n">ser</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;potage&#39;</span>  <span class="c1"># raises!</span>
+<span class="o">---------------------------------------------------------------------------</span>
+<span class="ne">ValueError</span><span class="p">:</span> <span class="n">Invalid</span> <span class="n">value</span> <span class="s1">&#39;potage&#39;</span> <span class="k">for</span> <span class="n">dtype</span> <span class="n">int64</span>
+</pre></div>
+</div>
+</section>
+<section id="motivation-and-scope">
+<h2>Motivation and Scope<a class="headerlink" href="#motivation-and-scope" title="Link to this heading">#</a></h2>
+<p>Currently, pandas is extremely flexible in handling different dtypes.
+However, this can potentially hide bugs, break user expectations, and copy data
+in what looks like it should be an inplace operation.</p>
+<p>An example of it hiding a bug is:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">In</span><span class="p">[</span><span class="mi">9</span><span class="p">]:</span> <span class="n">ser</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="s2">&quot;2000&quot;</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="mi">3</span><span class="p">))</span>
+
+<span class="n">In</span><span class="p">[</span><span class="mi">10</span><span class="p">]:</span> <span class="n">ser</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;2000-01-04&quot;</span>  <span class="c1"># works, is converted to datetime64</span>
+
+<span class="n">In</span><span class="p">[</span><span class="mi">11</span><span class="p">]:</span> <span class="n">ser</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;2000-01-04x&quot;</span>  <span class="c1"># typo - but pandas does not error, it upcasts to object</span>
+</pre></div>
+</div>
+<p>The scope of this PDEP is limited to setitem-like operations on Series (and DataFrame columns).
+For example, starting with:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">],</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]})</span>
+<span class="n">ser</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>then the following would all raise:</p>
+<ul class="simple">
+<li><p>setitem-like operations:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">ser.fillna('foo',</span> <span class="pre">inplace=True)</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ser.where(ser.isna(),</span> <span class="pre">'foo',</span> <span class="pre">inplace=True)</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ser.fillna('foo',</span> <span class="pre">inplace=False)</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ser.where(ser.isna(),</span> <span class="pre">'foo',</span> <span class="pre">inplace=False)</span></code></p></li>
+</ul>
+</li>
+<li><p>setitem indexing operations (where <code class="docutils literal notranslate"><span class="pre">indexer</span></code> could be a slice, a mask,
+a single value, a list or array of values, or any other allowed indexer):</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">ser.iloc[indexer]</span> <span class="pre">=</span> <span class="pre">'foo'</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ser.loc[indexer]</span> <span class="pre">=</span> <span class="pre">'foo'</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">df.iloc[indexer,</span> <span class="pre">0]</span> <span class="pre">=</span> <span class="pre">'foo'</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">df.loc[indexer,</span> <span class="pre">'a']</span> <span class="pre">=</span> <span class="pre">'foo'</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ser[indexer]</span> <span class="pre">=</span> <span class="pre">'foo'</span></code></p></li>
+</ul>
+</li>
+</ul>
+<p>It may be desirable to expand the top list to <code class="docutils literal notranslate"><span class="pre">Series.replace</span></code> and <code class="docutils literal notranslate"><span class="pre">Series.update</span></code>,
+but to keep the scope of the PDEP down, they are excluded for now.</p>
+<p>Examples of operations which would not raise are:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">ser.diff()</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pd.concat([ser,</span> <span class="pre">ser.astype(object)])</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ser.mean()</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ser[0]</span> <span class="pre">=</span> <span class="pre">3</span></code>  # same dtype</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ser[0]</span> <span class="pre">=</span> <span class="pre">3.</span></code>  # 3.0 is a ‘round’ float and so compatible with ‘int64’ dtype</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">df['a']</span> <span class="pre">=</span> <span class="pre">pd.date_range(datetime(2020,</span> <span class="pre">1,</span> <span class="pre">1),</span> <span class="pre">periods=3)</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">df.index.intersection(ser.index)</span></code></p></li>
+</ul>
+</section>
+<section id="detailed-description">
+<h2>Detailed description<a class="headerlink" href="#detailed-description" title="Link to this heading">#</a></h2>
+<p>Concretely, the suggestion is:</p>
+<ul class="simple">
+<li><p>If a <code class="docutils literal notranslate"><span class="pre">Series</span></code> is of a given dtype, then a <code class="docutils literal notranslate"><span class="pre">setitem</span></code>-like operation should not change its dtype.</p></li>
+<li><p>If a <code class="docutils literal notranslate"><span class="pre">setitem</span></code>-like operation would previously have changed a <code class="docutils literal notranslate"><span class="pre">Series</span></code>’ dtype, it would now raise.</p></li>
+</ul>
+<p>For a start, this would involve:</p>
+<ol class="arabic">
+<li><p>changing <code class="docutils literal notranslate"><span class="pre">Block.setitem</span></code> such that it does not have an <code class="docutils literal notranslate"><span class="pre">except</span></code> block in:</p>
+ <!-- language: python -->
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span> value = extract_array(value, extract_numpy=True)
+ try:
+     casted = np_can_hold_element(values.dtype, value)
+ except LossSetitiemError:
+     # current dtype cannot store value, coerce to common dtype
+     nb = self.coerce_to_target_dtype(value)
+     return nb.setitem(index, value)
+ else:
+</pre></div>
+</div>
+</li>
+<li><p>making a similar change in:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Block.where</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Block.putmask</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">EABackedBlock.setitem</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">EABackedBlock.where</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">EABackedBlock.putmask</span></code></p></li>
+</ul>
+</li>
+</ol>
+<p>The above would already require several hundreds of tests to be adjusted. Note that once
+implementation starts, the list of locations to change may turn out to be slightly
+different.</p>
+<section id="ban-upcasting-altogether-or-just-upcasting-to-object">
+<h3>Ban upcasting altogether, or just upcasting to <code class="docutils literal notranslate"><span class="pre">object</span></code>?<a class="headerlink" href="#ban-upcasting-altogether-or-just-upcasting-to-object" title="Link to this heading">#</a></h3>
+<p>The trickiest part of this proposal concerns what to do when setting a float in an integer column:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">In</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">ser</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="n">ser</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span>
+<span class="mi">0</span>    <span class="mi">1</span>
+<span class="mi">1</span>    <span class="mi">2</span>
+<span class="mi">2</span>    <span class="mi">3</span>
+<span class="n">dtype</span><span class="p">:</span> <span class="n">int64</span>
+
+<span class="n">In</span><span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="n">ser</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.5</span>  <span class="c1"># what should this do?</span>
+</pre></div>
+</div>
+<p>The current behaviour is to upcast to ‘float64’:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">4</span><span class="p">]:</span> <span class="n">ser</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">4</span><span class="p">]:</span>
+<span class="mi">0</span>    <span class="mf">1.5</span>
+<span class="mi">1</span>    <span class="mf">2.0</span>
+<span class="mi">2</span>    <span class="mf">3.0</span>
+<span class="n">dtype</span><span class="p">:</span> <span class="n">float64</span>
+</pre></div>
+</div>
+<p>This is not necessarily a sign of a bug, because the user might just be thinking of their <code class="docutils literal notranslate"><span class="pre">Series</span></code> as being
+numeric (without much regard for <code class="docutils literal notranslate"><span class="pre">int</span></code> vs <code class="docutils literal notranslate"><span class="pre">float</span></code>) - <code class="docutils literal notranslate"><span class="pre">'int64'</span></code> is just what pandas happened to infer
+when constructing it.</p>
+<p>Possible options could be:</p>
+<ol class="arabic simple">
+<li><p>Only accept round floats (e.g. <code class="docutils literal notranslate"><span class="pre">1.0</span></code>) and raise on anything else (e.g. <code class="docutils literal notranslate"><span class="pre">1.01</span></code>).</p></li>
+<li><p>Convert the float value to <code class="docutils literal notranslate"><span class="pre">int</span></code> before setting it (i.e. silently round all float values).</p></li>
+<li><p>Limit “banning upcasting” to when the upcasted dtype is <code class="docutils literal notranslate"><span class="pre">object</span></code> (i.e. preserve current behavior of upcasting the int64 Series to float64).</p></li>
+</ol>
+<p>Let us compare with what other libraries do:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">numpy</span></code>: option 2</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cudf</span></code>: option 2</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">polars</span></code>: option 2</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">R</span> <span class="pre">data.frame</span></code>: just upcasts (like pandas does now for non-nullable dtypes);</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pandas</span></code> (nullable dtypes): option 1</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">datatable</span></code>: option 1</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">DataFrames.jl</span></code>: option 1</p></li>
+</ul>
+<p>Option <code class="docutils literal notranslate"><span class="pre">2</span></code> would be a breaking behaviour change in pandas. Further,
+if the objective of this PDEP is to prevent bugs, then this is also not desirable:
+someone might set <code class="docutils literal notranslate"><span class="pre">1.5</span></code> and later be surprised to learn that they actually set <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p>
+<p>There are several downsides to option <code class="docutils literal notranslate"><span class="pre">3</span></code>:</p>
+<ul class="simple">
+<li><p>It would be inconsistent with the nullable dtypes’ behaviour.</p></li>
+<li><p>It would also add complexity to the codebase and to tests.</p></li>
+<li><p>It would be hard to teach, as instead of being able to teach a simple rule,
+There would be a rule with exceptions.</p></li>
+<li><p>There would be a risk of loss of precision and or overflow.</p></li>
+<li><p>It opens the door to other exceptions, such as not upcasting <code class="docutils literal notranslate"><span class="pre">'int8'</span></code> to <code class="docutils literal notranslate"><span class="pre">'int16'</span></code>.</p></li>
+</ul>
+<p>Option <code class="docutils literal notranslate"><span class="pre">1</span></code> is the maximally safe one in terms of protecting users from bugs, being
+consistent with the current behaviour of nullable dtypes, and in being simple to teach.
+Therefore, the option chosen by this PDEP is option 1.</p>
+</section>
+</section>
+<section id="usage-and-impact">
+<h2>Usage and Impact<a class="headerlink" href="#usage-and-impact" title="Link to this heading">#</a></h2>
+<p>This would make pandas stricter, so there should not be any risk of introducing bugs. If anything, this would help prevent bugs.</p>
+<p>Unfortunately, it would also risk annoying users who might have been intentionally upcasting.</p>
+<p>Given that users could still get the current behaviour by first explicitly casting the Series
+to float, it would be more beneficial to the community at large to err on the side
+of strictness.</p>
+</section>
+<section id="out-of-scope">
+<h2>Out of scope<a class="headerlink" href="#out-of-scope" title="Link to this heading">#</a></h2>
+<p>Enlargement. For example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ser</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<span class="n">ser</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">ser</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">4.5</span>
+</pre></div>
+</div>
+<p>There is arguably a larger conversation to be had about whether that should be allowed
+at all. To keep this proposal focused, it is intentionally excluded from the scope.</p>
+</section>
+<section id="f-a-q">
+<h2>F.A.Q.<a class="headerlink" href="#f-a-q" title="Link to this heading">#</a></h2>
+<p><strong>Q: What happens if setting <code class="docutils literal notranslate"><span class="pre">1.0</span></code> in an <code class="docutils literal notranslate"><span class="pre">int8</span></code> Series?</strong></p>
+<p><strong>A</strong>: The current behavior would be to insert <code class="docutils literal notranslate"><span class="pre">1.0</span></code> as <code class="docutils literal notranslate"><span class="pre">1</span></code> and keep the dtype
+as <code class="docutils literal notranslate"><span class="pre">int8</span></code>. So, this would not change.</p>
+<p><strong>Q: What happens if setting <code class="docutils literal notranslate"><span class="pre">1_000_000.0</span></code> in an <code class="docutils literal notranslate"><span class="pre">int8</span></code> Series?</strong></p>
+<p><strong>A</strong>: The current behavior would be to upcast to <code class="docutils literal notranslate"><span class="pre">int32</span></code>. So under this PDEP,
+it would instead raise.</p>
+<p><strong>Q: What happens in setting <code class="docutils literal notranslate"><span class="pre">16.000000000000001</span></code> in an <code class="docutils literal notranslate"><span class="pre">int8</span></code> Series?</strong></p>
+<p><strong>A</strong>: As far as Python is concerned, <code class="docutils literal notranslate"><span class="pre">16.000000000000001</span></code> and <code class="docutils literal notranslate"><span class="pre">16.0</span></code> are the
+same number. So, it would be inserted as <code class="docutils literal notranslate"><span class="pre">16</span></code> and the dtype would not change
+(just like what happens now, there would be no change here).</p>
+<p><strong>Q: What if I want <code class="docutils literal notranslate"><span class="pre">1.0000000001</span></code> to be inserted as <code class="docutils literal notranslate"><span class="pre">1.0</span></code> in an <code class="docutils literal notranslate"><span class="pre">int8</span></code> Series?</strong></p>
+<p><strong>A</strong>: You may want to define your own helper function, such as:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">maybe_convert_to_int</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="nb">round</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="o">&lt;</span> <span class="n">tolerance</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">round</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">x</span>
+</pre></div>
+</div>
+<p>which you could adapt according to your needs.</p>
+</section>
+<section id="timeline">
+<h2>Timeline<a class="headerlink" href="#timeline" title="Link to this heading">#</a></h2>
+<p>Deprecate sometime in the 2.x releases (after 2.0.0 has already been released), and enforce in 3.0.0.</p>
+<section id="pdep-history">
+<h3>PDEP History<a class="headerlink" href="#pdep-history" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>23 December 2022: Initial draft</p></li>
+</ul>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  <!-- Previous / next buttons -->
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#abstract">Abstract</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#motivation-and-scope">Motivation and Scope</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#detailed-description">Detailed description</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ban-upcasting-altogether-or-just-upcasting-to-object">Ban upcasting altogether, or just upcasting to <code class="docutils literal notranslate"><span class="pre">object</span></code>?</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#usage-and-impact">Usage and Impact</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#out-of-scope">Out of scope</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#f-a-q">F.A.Q.</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#timeline">Timeline</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pdep-history">PDEP History</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div class="tocsection sourcelink">
+    <a href="_sources/0006-ban-upcasting.md.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=365ca57ee442770a23c6"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=365ca57ee442770a23c6"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+  <p class="copyright">
+    
+      © Copyright 2023, Pandas.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item"><p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.14.3.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

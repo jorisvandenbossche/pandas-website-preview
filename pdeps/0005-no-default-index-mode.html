@@ -1,0 +1,685 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>PDEP-5: NoRowIndex &#8212; Pandas Enhancement Proposals  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=362ab14a" />
+    <link rel="stylesheet" type="text/css" href="_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="_static/pandas.css?v=cd9ee792" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=365ca57ee442770a23c6" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=365ca57ee442770a23c6" />
+  <script src="_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=365ca57ee442770a23c6"></script>
+
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/design-tabs.js?v=36754332"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '0005-no-default-index-mode';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+<header>
+  <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+  <div class="container">
+  <a class="navbar-brand" href="../."><img alt="" src="../static/img/pandas_white.svg"></a>
+  <div class="navbar-collapse collapse" id="nav-content">
+    <ul class="navbar-nav ms-auto">
+      <li class="nav-item">
+          <a class="nav-link" href="../about/roadmap.html">Back to the PDEP index</a>
+      </li>
+    </ul>
+  </div>
+  </div>
+  </nav>
+  </header>
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          <div class="navbar-item"><nav class="navbar-nav">
+  <p class="sidebar-header-items__title"
+     role="heading"
+     aria-level="1"
+     aria-label="Site Navigation">
+    Site Navigation
+  </p>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="0001-purpose-and-guidelines.html">
+                        PDEP-1: Purpose and guidelines
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="0004-consistent-to-datetime-parsing.html">
+                        PDEP-4: Consistent datetime parsing
+                      </a>
+                    </li>
+                
+  </ul>
+</nav></div>
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">PDEP-5: NoRowIndex</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="pdep-5-norowindex">
+<h1>PDEP-5: NoRowIndex<a class="headerlink" href="#pdep-5-norowindex" title="Link to this heading">#</a></h1>
+<ul class="simple">
+<li><p>Created: 14 November 2022</p></li>
+<li><p>Status: Withdrawn</p></li>
+<li><p>Discussion: <a class="reference external" href="https://github.com/pandas-dev/pandas/pull/49693">#49693</a></p></li>
+<li><p>Author: <a class="reference external" href="https://github.com/MarcoGorelli">Marco Gorelli</a></p></li>
+<li><p>Revision: 2</p></li>
+</ul>
+<section id="abstract">
+<h2>Abstract<a class="headerlink" href="#abstract" title="Link to this heading">#</a></h2>
+<p>The suggestion is to add a <code class="docutils literal notranslate"><span class="pre">NoRowIndex</span></code> class. Internally, it would act a bit like
+a <code class="docutils literal notranslate"><span class="pre">RangeIndex</span></code>, but some methods would be stricter. This would be one
+step towards enabling users who do not want to think about indices to not need to.</p>
+</section>
+<section id="motivation">
+<h2>Motivation<a class="headerlink" href="#motivation" title="Link to this heading">#</a></h2>
+<p>The Index can be a source of confusion and frustration for pandas users. For example, let’s consider the inputs</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">In</span><span class="p">[</span><span class="mi">37</span><span class="p">]:</span> <span class="n">ser1</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">25</span><span class="p">],</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>
+
+<span class="n">In</span><span class="p">[</span><span class="mi">38</span><span class="p">]:</span> <span class="n">ser2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">25</span><span class="p">],</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Then:</p>
+<ul>
+<li><p>it can be unexpected that adding <code class="docutils literal notranslate"><span class="pre">Series</span></code> with the same length (but different indices) produces <code class="docutils literal notranslate"><span class="pre">NaN</span></code>s in the result (https://stackoverflow.com/q/66094702/4451315):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">41</span><span class="p">]:</span> <span class="n">ser1</span> <span class="o">+</span> <span class="n">ser2</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">41</span><span class="p">]:</span>
+<span class="mi">1</span>    <span class="mf">20.0</span>
+<span class="mi">2</span>    <span class="mf">30.0</span>
+<span class="mi">3</span>    <span class="mf">40.0</span>
+<span class="mi">4</span>     <span class="n">NaN</span>
+<span class="mi">5</span>     <span class="n">NaN</span>
+<span class="n">dtype</span><span class="p">:</span> <span class="n">float64</span>
+</pre></div>
+</div>
+</li>
+<li><p>concatenation, even with <code class="docutils literal notranslate"><span class="pre">ignore_index=True</span></code>, still aligns on the index (https://github.com/pandas-dev/pandas/issues/25349):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">42</span><span class="p">]:</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">ser1</span><span class="p">,</span> <span class="n">ser2</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">42</span><span class="p">]:</span>
+      <span class="mi">0</span>     <span class="mi">1</span>
+<span class="mi">1</span>  <span class="mf">10.0</span>  <span class="mf">10.0</span>
+<span class="mi">2</span>  <span class="mf">15.0</span>  <span class="mf">15.0</span>
+<span class="mi">3</span>  <span class="mf">20.0</span>  <span class="mf">20.0</span>
+<span class="mi">5</span>  <span class="mf">25.0</span>   <span class="n">NaN</span>
+<span class="mi">4</span>   <span class="n">NaN</span>  <span class="mf">25.0</span>
+</pre></div>
+</div>
+</li>
+<li><p>it can be frustrating to have to repeatedly call <code class="docutils literal notranslate"><span class="pre">.reset_index()</span></code> (https://twitter.com/chowthedog/status/1559946277315641345):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="n">ser1</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">+</span> <span class="n">ser2</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">3</span><span class="p">]:</span>
+<span class="mi">0</span>    <span class="mi">20</span>
+<span class="mi">1</span>    <span class="mi">30</span>
+<span class="mi">2</span>    <span class="mi">40</span>
+<span class="mi">3</span>    <span class="mi">50</span>
+<span class="n">dtype</span><span class="p">:</span> <span class="n">int64</span>
+</pre></div>
+</div>
+</li>
+</ul>
+<p>If a user did not want to think about row labels (which they may have ended up after slicing / concatenating operations),
+then <code class="docutils literal notranslate"><span class="pre">NoRowIndex</span></code> would enable the above to work in a more intuitive
+manner (details and examples to follow below).</p>
+</section>
+<section id="scope">
+<h2>Scope<a class="headerlink" href="#scope" title="Link to this heading">#</a></h2>
+<p>This proposal deals exclusively with the <code class="docutils literal notranslate"><span class="pre">NoRowIndex</span></code> class. To allow users to fully “opt-out” of having to think
+about row labels, the following could also be useful:</p>
+<ul class="simple">
+<li><p>a <code class="docutils literal notranslate"><span class="pre">pd.set_option('mode.no_row_index',</span> <span class="pre">True)</span></code> mode which would default to creating new <code class="docutils literal notranslate"><span class="pre">DataFrame</span></code>s and
+<code class="docutils literal notranslate"><span class="pre">Series</span></code> with <code class="docutils literal notranslate"><span class="pre">NoRowIndex</span></code> instead of <code class="docutils literal notranslate"><span class="pre">RangeIndex</span></code>;</p></li>
+<li><p>giving <code class="docutils literal notranslate"><span class="pre">as_index</span></code> options to methods which currently create an index
+(e.g. <code class="docutils literal notranslate"><span class="pre">value_counts</span></code>, <code class="docutils literal notranslate"><span class="pre">.sum()</span></code>, <code class="docutils literal notranslate"><span class="pre">.pivot_table</span></code>) to just insert a new column instead of creating an
+<code class="docutils literal notranslate"><span class="pre">Index</span></code>.</p></li>
+</ul>
+<p>However, neither of the above will be discussed here.</p>
+</section>
+<section id="detailed-description">
+<h2>Detailed Description<a class="headerlink" href="#detailed-description" title="Link to this heading">#</a></h2>
+<p>The core pandas code would change as little as possible. The additional complexity should be handled
+within the <code class="docutils literal notranslate"><span class="pre">NoRowIndex</span></code> object. It would act just like <code class="docutils literal notranslate"><span class="pre">RangeIndex</span></code>, but would be a bit stricter
+in some cases:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> could only be <code class="docutils literal notranslate"><span class="pre">None</span></code>;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">start</span></code> could only be <code class="docutils literal notranslate"><span class="pre">0</span></code>, <code class="docutils literal notranslate"><span class="pre">step</span></code> <code class="docutils literal notranslate"><span class="pre">1</span></code>;</p></li>
+<li><p>when appending one <code class="docutils literal notranslate"><span class="pre">NoRowIndex</span></code> to another <code class="docutils literal notranslate"><span class="pre">NoRowIndex</span></code>, the result would still be <code class="docutils literal notranslate"><span class="pre">NoRowIndex</span></code>.
+Appending a <code class="docutils literal notranslate"><span class="pre">NoRowIndex</span></code> to any other index (or vice-versa) would raise;</p></li>
+<li><p>the <code class="docutils literal notranslate"><span class="pre">NoRowIndex</span></code> class would be preserved under slicing;</p></li>
+<li><p>a <code class="docutils literal notranslate"><span class="pre">NoRowIndex</span></code> could only be aligned with another <code class="docutils literal notranslate"><span class="pre">Index</span></code> if it’s also <code class="docutils literal notranslate"><span class="pre">NoRowIndex</span></code> and if it’s of the same length;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">DataFrame</span></code> columns cannot be <code class="docutils literal notranslate"><span class="pre">NoRowIndex</span></code> (so <code class="docutils literal notranslate"><span class="pre">transpose</span></code> would need some adjustments when called on a <code class="docutils literal notranslate"><span class="pre">NoRowIndex</span></code> <code class="docutils literal notranslate"><span class="pre">DataFrame</span></code>);</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">insert</span></code> and <code class="docutils literal notranslate"><span class="pre">delete</span></code> should raise. As a consequence, if <code class="docutils literal notranslate"><span class="pre">df</span></code> is a <code class="docutils literal notranslate"><span class="pre">DataFrame</span></code> with a
+<code class="docutils literal notranslate"><span class="pre">NoRowIndex</span></code>, then <code class="docutils literal notranslate"><span class="pre">df.drop</span></code> with <code class="docutils literal notranslate"><span class="pre">axis=0</span></code> would always raise;</p></li>
+<li><p>arithmetic operations (e.g. <code class="docutils literal notranslate"><span class="pre">NoRowIndex(3)</span> <span class="pre">+</span> <span class="pre">2</span></code>) would always raise;</p></li>
+<li><p>when printing a <code class="docutils literal notranslate"><span class="pre">DataFrame</span></code>/<code class="docutils literal notranslate"><span class="pre">Series</span></code> with a <code class="docutils literal notranslate"><span class="pre">NoRowIndex</span></code>, then the row labels would not be printed;</p></li>
+<li><p>a <code class="docutils literal notranslate"><span class="pre">MultiIndex</span></code> could not be created with a <code class="docutils literal notranslate"><span class="pre">NoRowIndex</span></code> as one of its levels.</p></li>
+</ul>
+<p>Let’s go into more detail for some of these. In the examples that follow, the <code class="docutils literal notranslate"><span class="pre">NoRowIndex</span></code> will be passed explicitly,
+but this is not how users would be expected to use it (see “Usage and Impact” section for details).</p>
+<section id="norowindex-append">
+<h3>NoRowIndex.append<a class="headerlink" href="#norowindex-append" title="Link to this heading">#</a></h3>
+<p>If one has two <code class="docutils literal notranslate"><span class="pre">DataFrame</span></code>s with <code class="docutils literal notranslate"><span class="pre">NoRowIndex</span></code>, then one would expect that concatenating them would
+result in a <code class="docutils literal notranslate"><span class="pre">DataFrame</span></code> which still has <code class="docutils literal notranslate"><span class="pre">NoRowIndex</span></code>. To do this, the following rule could be introduced:</p>
+<blockquote>
+<div><p>If appending a <code class="docutils literal notranslate"><span class="pre">NoRowIndex</span></code> of length <code class="docutils literal notranslate"><span class="pre">y</span></code> to a <code class="docutils literal notranslate"><span class="pre">NoRowIndex</span></code> of length <code class="docutils literal notranslate"><span class="pre">x</span></code>, the result will be a
+<code class="docutils literal notranslate"><span class="pre">NoRowIndex</span></code> of length <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">+</span> <span class="pre">y</span></code>.</p>
+</div></blockquote>
+<p>Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">6</span><span class="p">]:</span> <span class="n">df1</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span>  <span class="mi">2</span><span class="p">],</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]},</span> <span class="n">index</span><span class="o">=</span><span class="n">NoRowIndex</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">7</span><span class="p">]:</span> <span class="n">df2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">]},</span> <span class="n">index</span><span class="o">=</span><span class="n">NoRowIndex</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">8</span><span class="p">]:</span> <span class="n">df1</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">8</span><span class="p">]:</span>
+ <span class="n">a</span>  <span class="n">b</span>
+ <span class="mi">1</span>  <span class="mi">4</span>
+ <span class="mi">2</span>  <span class="mi">5</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">9</span><span class="p">]:</span> <span class="n">df2</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">9</span><span class="p">]:</span>
+ <span class="n">a</span>  <span class="n">b</span>
+ <span class="mi">4</span>  <span class="mi">0</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">10</span><span class="p">]:</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">df1</span><span class="p">,</span> <span class="n">df2</span><span class="p">])</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">10</span><span class="p">]:</span>
+ <span class="n">a</span>  <span class="n">b</span>
+ <span class="mi">1</span>  <span class="mi">4</span>
+ <span class="mi">2</span>  <span class="mi">5</span>
+ <span class="mi">4</span>  <span class="mi">0</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">11</span><span class="p">]:</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">df1</span><span class="p">,</span> <span class="n">df2</span><span class="p">])</span><span class="o">.</span><span class="n">index</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">11</span><span class="p">]:</span> <span class="n">NoRowIndex</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Appending anything other than another <code class="docutils literal notranslate"><span class="pre">NoRowIndex</span></code> would raise.</p>
+</section>
+<section id="slicing-a-norowindex">
+<h3>Slicing a <code class="docutils literal notranslate"><span class="pre">NoRowIndex</span></code><a class="headerlink" href="#slicing-a-norowindex" title="Link to this heading">#</a></h3>
+<p>If one has a <code class="docutils literal notranslate"><span class="pre">DataFrame</span></code> with <code class="docutils literal notranslate"><span class="pre">NoRowIndex</span></code>, then one would expect that a slice of it would still have
+a <code class="docutils literal notranslate"><span class="pre">NoRowIndex</span></code>. This could be accomplished with:</p>
+<blockquote>
+<div><p>If a slice of length <code class="docutils literal notranslate"><span class="pre">x</span></code> is taken from a <code class="docutils literal notranslate"><span class="pre">NoRowIndex</span></code> of length <code class="docutils literal notranslate"><span class="pre">y</span></code>, then one gets a
+<code class="docutils literal notranslate"><span class="pre">NoRowIndex</span></code> of length <code class="docutils literal notranslate"><span class="pre">x</span></code>. Label-based slicing would not be allowed.</p>
+</div></blockquote>
+<p>Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">12</span><span class="p">]:</span> <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span>  <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]},</span> <span class="n">index</span><span class="o">=</span><span class="n">NoRowIndex</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">13</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">]</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">13</span><span class="p">]:</span>
+<span class="mi">5</span>
+<span class="mi">6</span>
+<span class="n">Name</span><span class="p">:</span> <span class="n">b</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="n">int64</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">14</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">index</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">14</span><span class="p">]:</span> <span class="n">NoRowIndex</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Slicing by label, however, would be disallowed:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">15</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">]</span>
+<span class="o">---------------------------------------------------------------------------</span>
+<span class="ne">IndexError</span><span class="p">:</span> <span class="n">Cannot</span> <span class="n">use</span> <span class="n">label</span><span class="o">-</span><span class="n">based</span> <span class="n">indexing</span> <span class="n">on</span> <span class="n">NoRowIndex</span><span class="err">!</span>
+</pre></div>
+</div>
+<p>Note too that:</p>
+<ul class="simple">
+<li><p>other uses of <code class="docutils literal notranslate"><span class="pre">.loc</span></code>, such as boolean masks, would still be allowed (see F.A.Q);</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">.iloc</span></code> and <code class="docutils literal notranslate"><span class="pre">.iat</span></code> would keep working as before;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">.at</span></code> would raise.</p></li>
+</ul>
+</section>
+<section id="aligning-norowindexs">
+<h3>Aligning <code class="docutils literal notranslate"><span class="pre">NoRowIndex</span></code>s<a class="headerlink" href="#aligning-norowindexs" title="Link to this heading">#</a></h3>
+<p>To minimise surprises, the rule would be:</p>
+<blockquote>
+<div><p>A <code class="docutils literal notranslate"><span class="pre">NoRowIndex</span></code> can only be aligned with another <code class="docutils literal notranslate"><span class="pre">NoRowIndex</span></code> of the same length.
+Attempting to align it with anything else would raise.</p>
+</div></blockquote>
+<p>Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">ser1</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">index</span><span class="o">=</span><span class="n">NoRowIndex</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="n">ser2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span> <span class="n">index</span><span class="o">=</span><span class="n">NoRowIndex</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="n">ser1</span> <span class="o">+</span> <span class="n">ser2</span>  <span class="c1"># works!</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">3</span><span class="p">]:</span>
+<span class="mi">5</span>
+<span class="mi">7</span>
+<span class="mi">9</span>
+<span class="n">dtype</span><span class="p">:</span> <span class="n">int64</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">4</span><span class="p">]:</span> <span class="n">ser1</span> <span class="o">+</span> <span class="n">ser2</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>  <span class="c1"># errors!</span>
+<span class="o">---------------------------------------------------------------------------</span>
+<span class="ne">TypeError</span><span class="p">:</span> <span class="n">Cannot</span> <span class="n">join</span> <span class="n">NoRowIndex</span> <span class="n">of</span> <span class="n">different</span> <span class="n">lengths</span>
+</pre></div>
+</div>
+</section>
+<section id="columns-cannot-be-norowindex">
+<h3>Columns cannot be NoRowIndex<a class="headerlink" href="#columns-cannot-be-norowindex" title="Link to this heading">#</a></h3>
+<p>This proposal deals exclusively with allowing users to not need to think about
+row labels. There’s no suggestion to remove the column labels.</p>
+<p>In particular, calling <code class="docutils literal notranslate"><span class="pre">transpose</span></code> on a <code class="docutils literal notranslate"><span class="pre">NoRowIndex</span></code> <code class="docutils literal notranslate"><span class="pre">DataFrame</span></code>
+would error. The error would come with a helpful error message, informing
+users that they should first set an index. E.g.:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">4</span><span class="p">]:</span> <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span>  <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]},</span> <span class="n">index</span><span class="o">=</span><span class="n">NoRowIndex</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">5</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+<span class="o">---------------------------------------------------------------------------</span>
+<span class="ne">ValueError</span><span class="p">:</span> <span class="n">Columns</span> <span class="n">cannot</span> <span class="n">be</span> <span class="n">NoRowIndex</span><span class="o">.</span>
+<span class="n">If</span> <span class="n">you</span> <span class="n">got</span> <span class="n">here</span> <span class="n">via</span> <span class="err">`</span><span class="n">transpose</span><span class="err">`</span> <span class="ow">or</span> <span class="n">an</span> <span class="err">`</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="err">`</span> <span class="n">operation</span><span class="p">,</span> <span class="n">then</span> <span class="n">you</span> <span class="n">should</span> <span class="n">first</span> <span class="nb">set</span> <span class="n">an</span> <span class="n">index</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="p">:</span> <span class="err">`</span><span class="n">df</span><span class="o">.</span><span class="n">pipe</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_df</span><span class="p">:</span> <span class="n">_df</span><span class="o">.</span><span class="n">set_axis</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">RangeIndex</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">_df</span><span class="p">))))</span><span class="err">`</span>
+</pre></div>
+</div>
+</section>
+<section id="dataframeformatter-and-seriesformatter-changes">
+<h3>DataFrameFormatter and SeriesFormatter changes<a class="headerlink" href="#dataframeformatter-and-seriesformatter-changes" title="Link to this heading">#</a></h3>
+<p>When printing an object with a <code class="docutils literal notranslate"><span class="pre">NoRowIndex</span></code>, then the row labels would not be shown:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">15</span><span class="p">]:</span> <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span>  <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]},</span> <span class="n">index</span><span class="o">=</span><span class="n">NoRowIndex</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">16</span><span class="p">]:</span> <span class="n">df</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">16</span><span class="p">]:</span>
+ <span class="n">a</span>  <span class="n">b</span>
+ <span class="mi">1</span>  <span class="mi">4</span>
+ <span class="mi">2</span>  <span class="mi">5</span>
+ <span class="mi">3</span>  <span class="mi">6</span>
+</pre></div>
+</div>
+<p>Of the above changes, this may be the only one that would need implementing within
+<code class="docutils literal notranslate"><span class="pre">DataFrameFormatter</span></code> / <code class="docutils literal notranslate"><span class="pre">SerieFormatter</span></code>, as opposed to within <code class="docutils literal notranslate"><span class="pre">NoRowIndex</span></code>.</p>
+</section>
+</section>
+<section id="usage-and-impact">
+<h2>Usage and Impact<a class="headerlink" href="#usage-and-impact" title="Link to this heading">#</a></h2>
+<p>Users would not be expected to work with the <code class="docutils literal notranslate"><span class="pre">NoRowIndex</span></code> class itself directly.
+Usage would probably involve a mode which would change how the <code class="docutils literal notranslate"><span class="pre">default_index</span></code>
+function to return a <code class="docutils literal notranslate"><span class="pre">NoRowIndex</span></code> rather than a <code class="docutils literal notranslate"><span class="pre">RangeIndex</span></code>.
+Then, if a <code class="docutils literal notranslate"><span class="pre">mode.no_row_index</span></code> option was introduced and a user opted in to it with</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s2">&quot;mode.no_row_index&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>then the following would all create a <code class="docutils literal notranslate"><span class="pre">DataFrame</span></code> with a <code class="docutils literal notranslate"><span class="pre">NoRowIndex</span></code> (as they
+all call <code class="docutils literal notranslate"><span class="pre">default_index</span></code>):</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">df.reset_index()</span></code>;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pd.concat([df1,</span> <span class="pre">df2],</span> <span class="pre">ignore_index=True)</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">df1.merge(df2,</span> <span class="pre">on=col)</span></code>;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">df</span> <span class="pre">=</span> <span class="pre">pd.DataFrame({'col_1':</span> <span class="pre">[1,</span> <span class="pre">2,</span> <span class="pre">3]})</span></code></p></li>
+</ul>
+<p>Further discussion of such a mode is out-of-scope for this proposal. A <code class="docutils literal notranslate"><span class="pre">NoRowIndex</span></code> would
+just be a first step towards getting there.</p>
+</section>
+<section id="implementation">
+<h2>Implementation<a class="headerlink" href="#implementation" title="Link to this heading">#</a></h2>
+<p>Draft pull request showing proof of concept: https://github.com/pandas-dev/pandas/pull/49693.</p>
+<p>Note that implementation details could well change even if this PDEP were
+accepted. For example, <code class="docutils literal notranslate"><span class="pre">NoRowIndex</span></code> would not necessarily need to subclass
+<code class="docutils literal notranslate"><span class="pre">RangeIndex</span></code>, and it would not necessarily need to be accessible to the user
+(<code class="docutils literal notranslate"><span class="pre">df.index</span></code> could well return <code class="docutils literal notranslate"><span class="pre">None</span></code>)</p>
+</section>
+<section id="likely-faq">
+<h2>Likely FAQ<a class="headerlink" href="#likely-faq" title="Link to this heading">#</a></h2>
+<p><strong>Q: Could not users just use <code class="docutils literal notranslate"><span class="pre">RangeIndex</span></code>? Why do we need a new class?</strong></p>
+<p><strong>A</strong>: <code class="docutils literal notranslate"><span class="pre">RangeIndex</span></code> is not preserved under slicing and appending, e.g.:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">In</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">ser</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+
+<span class="n">In</span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="n">ser</span><span class="p">[</span><span class="n">ser</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">index</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="n">Int64Index</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;int64&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If someone does not want to think about row labels and starts off
+with a <code class="docutils literal notranslate"><span class="pre">RangeIndex</span></code>, they’ll very quickly lose it.</p>
+<p><strong>Q: Are indices not really powerful?</strong></p>
+<p><strong>A:</strong> Yes! And they’re also confusing to many users, even experienced developers.
+Often users are using <code class="docutils literal notranslate"><span class="pre">.reset_index</span></code> to avoid issues with indices and alignment.
+Such users would benefit from being able to not think about indices
+and alignment. Indices would be here to stay, and <code class="docutils literal notranslate"><span class="pre">NoRowIndex</span></code> would not be the
+default.</p>
+<p><strong>Q: How could one switch a <code class="docutils literal notranslate"><span class="pre">NoRowIndex</span></code> <code class="docutils literal notranslate"><span class="pre">DataFrame</span></code> back to one with an index?</strong></p>
+<p><strong>A:</strong> The simplest way would probably be:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">set_axis</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">RangeIndex</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)))</span>
+</pre></div>
+</div>
+<p>There’s probably no need to introduce a new method for this.</p>
+<p>Conversely, to get rid of the index, then if the <code class="docutils literal notranslate"><span class="pre">mode.no_row_index</span></code> option was introduced, then
+one could simply do <code class="docutils literal notranslate"><span class="pre">df.reset_index(drop=True)</span></code>.</p>
+<p><strong>Q: How would <code class="docutils literal notranslate"><span class="pre">tz_localize</span></code> and other methods which operate on the index work on a <code class="docutils literal notranslate"><span class="pre">NoRowIndex</span></code> <code class="docutils literal notranslate"><span class="pre">DataFrame</span></code>?</strong></p>
+<p><strong>A:</strong> Same way they work on other <code class="docutils literal notranslate"><span class="pre">NumericIndex</span></code>s, which would typically be to raise:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="n">ser</span><span class="o">.</span><span class="n">tz_localize</span><span class="p">(</span><span class="s1">&#39;UTC&#39;</span><span class="p">)</span>
+<span class="o">---------------------------------------------------------------------------</span>
+<span class="ne">TypeError</span><span class="p">:</span> <span class="n">index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">a</span> <span class="n">valid</span> <span class="n">DatetimeIndex</span> <span class="ow">or</span> <span class="n">PeriodIndex</span>
+</pre></div>
+</div>
+<p><strong>Q: Why not let transpose switch <code class="docutils literal notranslate"><span class="pre">NoRowIndex</span></code> to <code class="docutils literal notranslate"><span class="pre">RangeIndex</span></code> under the hood before swapping index and columns?</strong></p>
+<p><strong>A:</strong> This is the kind of magic that can lead to surprising behaviour that’s
+difficult to debug. For example, <code class="docutils literal notranslate"><span class="pre">df.transpose().transpose()</span></code> would not
+round-trip. It’s easy enough to set an index after all, better to “force” users
+to be intentional about what they want and end up with fewer surprises later
+on.</p>
+<p><strong>Q: What would df.sum(), and other methods which introduce an index, return?</strong></p>
+<p><strong>A:</strong> Such methods would still set an index and would work the same way they
+do now. There may be some way to change that (e.g. introducing <code class="docutils literal notranslate"><span class="pre">as_index</span></code>
+arguments and introducing a mode to set its default) but that’s out of scope
+for this particular PDEP.</p>
+<p><strong>Q: How would a user opt-in to a <code class="docutils literal notranslate"><span class="pre">NoRowIndex</span></code> DataFrame?</strong></p>
+<p><strong>A:</strong> This PDEP would only allow it via the constructor, passing
+<code class="docutils literal notranslate"><span class="pre">index=NoRowIndex(len(df))</span></code>. A mode could be introduced to toggle
+making that the default, but would be out-of-scope for the current PDEP.</p>
+<p><strong>Q: Would <code class="docutils literal notranslate"><span class="pre">.loc</span></code> stop working?</strong></p>
+<p><strong>A:</strong> No. It would only raise if used for label-based selection. Other uses
+of <code class="docutils literal notranslate"><span class="pre">.loc</span></code>, such as <code class="docutils literal notranslate"><span class="pre">df.loc[:,</span> <span class="pre">col_1]</span></code> or <code class="docutils literal notranslate"><span class="pre">df.loc[boolean_mask,</span> <span class="pre">col_1]</span></code>, would
+continue working.</p>
+<p><strong>Q: What’s unintuitive about <code class="docutils literal notranslate"><span class="pre">Series</span></code> aligning indices when summing?</strong></p>
+<p><strong>A:</strong> Not sure, but I once asked a group of experienced developers what the
+output of</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ser1</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<span class="n">ser2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">ser1</span> <span class="o">+</span> <span class="n">ser2</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>would be, and <em>nobody</em> got it right.</p>
+</section>
+<section id="reasons-for-withdrawal">
+<h2>Reasons for withdrawal<a class="headerlink" href="#reasons-for-withdrawal" title="Link to this heading">#</a></h2>
+<p>After some discussions, it has become clear there is not enough for support for the proposal in its current state.
+In short, it would add too much complexity to justify the potential benefits. It would unacceptably increase
+the maintenance burden, the testing requirements, and the benefits would be minimal.</p>
+<p>Concretely:</p>
+<ul class="simple">
+<li><p>maintenance burden: it would not be possible to handle all the complexity within the <code class="docutils literal notranslate"><span class="pre">NoRowIndex</span></code> class itself, some
+extra logic would need to go into the pandas core codebase, which is already very complex and hard to maintain;</p></li>
+<li><p>the testing burden would be too high. Properly testing this would mean almost doubling the size of the test suite.
+Coverage for options already is not great: for example <a class="reference external" href="https://github.com/pandas-dev/pandas/issues/49732">this issue</a>
+was caused by a PR which passed CI, but CI did not (and still does not) cover that option (plotting backends);</p></li>
+<li><p>it will not benefit most users, as users do not tend to use nor discover options which are not the default;</p></li>
+<li><p>it would be difficult to reconcile with some existing behaviours: for example, <code class="docutils literal notranslate"><span class="pre">df.sum()</span></code> returns a Series with the
+column names in the index.</p></li>
+</ul>
+<p>In order to make no-index the pandas default and have a chance of benefiting users, a more comprehensive set of changes
+would need to made at the same time. This would require a proposal much larger in scope, and would be a much more radical change.
+It may be that this proposal will be revisited in the future, but in its current state (as an option) it cannot be accepted.</p>
+<p>This has still been a useful exercise, though, as it has resulted in two related proposals (see below).</p>
+</section>
+<section id="related-proposals">
+<h2>Related proposals<a class="headerlink" href="#related-proposals" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Deprecate automatic alignment, at least in some cases: https://github.com/pandas-dev/pandas/issues/49939;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">.value_counts</span></code> behaviour change: https://github.com/pandas-dev/pandas/issues/49497</p></li>
+</ul>
+</section>
+<section id="pdep-history">
+<h2>PDEP History<a class="headerlink" href="#pdep-history" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>14 November 2022: Initial draft</p></li>
+<li><p>18 November 2022: First revision (limited the proposal to a new class, leaving a <code class="docutils literal notranslate"><span class="pre">mode</span></code> to a separate proposal)</p></li>
+<li><p>14 December 2022: Withdrawal (difficulty reconciling with some existing methods, lack of strong support,
+maintenance burden increasing unjustifiably)</p></li>
+</ul>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  <!-- Previous / next buttons -->
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#abstract">Abstract</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#motivation">Motivation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#scope">Scope</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#detailed-description">Detailed Description</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#norowindex-append">NoRowIndex.append</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#slicing-a-norowindex">Slicing a <code class="docutils literal notranslate"><span class="pre">NoRowIndex</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#aligning-norowindexs">Aligning <code class="docutils literal notranslate"><span class="pre">NoRowIndex</span></code>s</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#columns-cannot-be-norowindex">Columns cannot be NoRowIndex</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dataframeformatter-and-seriesformatter-changes">DataFrameFormatter and SeriesFormatter changes</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#usage-and-impact">Usage and Impact</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#implementation">Implementation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#likely-faq">Likely FAQ</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reasons-for-withdrawal">Reasons for withdrawal</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#related-proposals">Related proposals</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pdep-history">PDEP History</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div class="tocsection sourcelink">
+    <a href="_sources/0005-no-default-index-mode.md.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=365ca57ee442770a23c6"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=365ca57ee442770a23c6"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+  <p class="copyright">
+    
+      © Copyright 2023, Pandas.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item"><p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.14.3.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
