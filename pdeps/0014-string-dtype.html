@@ -392,7 +392,7 @@ storage of the string data (using pyarrow or python objects), but an additional
 and NaN semantics.</p>
 <p>Overview of the different ways to specify a dtype and the resulting concrete
 dtype of the data:</p>
-<table class="table">
+<table class="table small" style="display: block;">
 <thead>
 <tr class="row-odd"><th class="head"><p>User specification</p></th>
 <th class="head"><p>Concrete dtype</p></th>
@@ -423,17 +423,17 @@ dtype of the data:</p>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">StringDtype(&quot;pyarrow&quot;,</span> <span class="pre">na_value=pd.NA)</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">StringDtype(storage=&quot;pyarrow&quot;,</span> <span class="pre">na_value=pd.NA)</span></code></p></td>
-<td><p>“string[pyarrow]”</p></td>
+<td><p>“String[pyarrow]”</p></td>
 <td><p></p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">StringDtype(&quot;python&quot;,</span> <span class="pre">na_value=pd.NA)</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">StringDtype(storage=&quot;python&quot;,</span> <span class="pre">na_value=pd.NA)</span></code></p></td>
-<td><p>“string[python]”</p></td>
+<td><p>“String[python]”</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">StringDtype(na_value=pd.NA)</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">StringDtype(na_value=pd.NA)</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;String&quot;</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">StringDtype(storage=&quot;pyarrow&quot;</span> <span class="pre">|</span> <span class="pre">&quot;python&quot;,</span> <span class="pre">na_value=pd.NA)</span></code></p></td>
-<td><p>“string[pyarrow]” or “string[python]”</p></td>
+<td><p>“String[pyarrow]” or “String[python]”</p></td>
 <td><p>(1)</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">StringDtype(&quot;pyarrow_numpy&quot;)</span></code></p></td>
