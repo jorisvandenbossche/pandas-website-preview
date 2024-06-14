@@ -207,7 +207,7 @@ document.write(`
 <p>This PDEP proposes to introduce a dedicated string dtype that will be used by
 default in pandas 3.0:</p>
 <ul class="simple">
-<li><p>In pandas 3.0, enable a “string” dtype by default, using PyArrow if available
+<li><p>In pandas 3.0, enable a string dtype (<code class="docutils literal notranslate"><span class="pre">&quot;str&quot;</span></code>) by default, using PyArrow if available
 or otherwise a string dtype using numpy object-dtype under the hood as fallback.</p></li>
 <li><p>The default string dtype will use missing value semantics (using NaN) consistent
 with the other default data types.</p></li>
@@ -242,9 +242,9 @@ This could be specified with the <code class="docutils literal notranslate"><spa
 <p>Since its introduction, the <code class="docutils literal notranslate"><span class="pre">StringDtype</span></code> has always been opt-in, and has used
 the experimental <code class="docutils literal notranslate"><span class="pre">pd.NA</span></code> sentinel for missing values (which was also <a class="reference external" href="https://pandas.pydata.org/docs/whatsnew/v1.0.0.html#experimental-na-scalar-to-denote-missing-values">introduced
 in pandas 1.0</a>).
-However, up to this date, pandas has not yet taken the step to use <code class="docutils literal notranslate"><span class="pre">pd.NA</span></code> by
-default for any dtype, and thus the <code class="docutils literal notranslate"><span class="pre">StringDtype</span></code> deviates in missing value behaviour compared
-to the default data types.</p>
+However, up to this date, pandas has not yet taken the step to use <code class="docutils literal notranslate"><span class="pre">pd.NA</span></code> for
+for any default dtype, and thus the <code class="docutils literal notranslate"><span class="pre">StringDtype</span></code> deviates in missing value
+behaviour compared to the default data types.</p>
 <p>In 2023, <a class="reference external" href="https://pandas.pydata.org/pdeps/0010-required-pyarrow-dependency.html">PDEP-10</a>
 proposed to start using a PyArrow-backed string dtype by default in pandas 3.0
 (i.e. infer this type for string data instead of object dtype). To ensure we
@@ -285,14 +285,15 @@ is intended to become the default in pandas 3.0).</p>
 <h2>Proposal<a class="headerlink" href="#proposal" title="Link to this heading">#</a></h2>
 <p>To be able to move forward with a string data type in pandas 3.0, this PDEP proposes:</p>
 <ol class="arabic simple">
-<li><p>For pandas 3.0,  a “string” dtype is enabled by default, which will use PyArrow
-if installed, and otherwise falls back to an in-house functionally-equivalent
-(but slower) version.</p></li>
-<li><p>This default “string” dtype will follow the same behaviour for missing values
+<li><p>For pandas 3.0, a <code class="docutils literal notranslate"><span class="pre">&quot;str&quot;</span></code> string dtype is enabled by default, i.e. this
+string dtype will be used as the default dtype for text data when creating
+pandas objects (e.g. inference in constructors, I/O functions).</p></li>
+<li><p>This default string dtype will follow the same behaviour for missing values
 as other default data types, and use <code class="docutils literal notranslate"><span class="pre">NaN</span></code> as the missing value sentinel.</p></li>
-<li><p>The version that is not backed by PyArrow can reuse (with minor code
-additions) the existing numpy object-dtype backed StringArray for its
-implementation.</p></li>
+<li><p>The string dtype will use PyArrow if installed, and otherwise falls back to
+an in-house functionally-equivalent (but slower) version. This fallback can
+reuse (with minor code additions) the existing numpy object-dtype backed
+StringArray for its implementation.</p></li>
 <li><p>Installation guidelines are updated to clearly encourage users to install
 pyarrow for the default user experience.</p></li>
 </ol>
@@ -320,17 +321,16 @@ that case.</p>
 </section>
 <section id="missing-value-semantics">
 <h3>Missing value semantics<a class="headerlink" href="#missing-value-semantics" title="Link to this heading">#</a></h3>
-<p>As mentioned in the background section, the original <code class="docutils literal notranslate"><span class="pre">StringDtype</span></code> has used
-the experimental <code class="docutils literal notranslate"><span class="pre">pd.NA</span></code> sentinel for missing values. In addition to using
-<code class="docutils literal notranslate"><span class="pre">pd.NA</span></code> as the scalar for a missing value, this essentially means
-that:</p>
+<p>As mentioned in the background section, the original <code class="docutils literal notranslate"><span class="pre">StringDtype</span></code> has always
+used the experimental <code class="docutils literal notranslate"><span class="pre">pd.NA</span></code> sentinel for missing values. In addition to using
+<code class="docutils literal notranslate"><span class="pre">pd.NA</span></code> as the scalar for a missing value, this essentially means that:</p>
 <ul class="simple">
 <li><p>String columns follow <a class="reference external" href="https://pandas.pydata.org/docs/user_guide/missing_data.html#na-semantics">“NA-semantics”</a>
 for missing values, where <code class="docutils literal notranslate"><span class="pre">NA</span></code> propagates in boolean operations such as
 comparisons or predicates.</p></li>
 <li><p>Operations on the string column that give a numeric or boolean result use the
 nullable Integer/Float/Boolean data types (e.g. <code class="docutils literal notranslate"><span class="pre">ser.str.len()</span></code> returns the
-nullable <code class="docutils literal notranslate"><span class="pre">'Int64&quot;</span></code> / <code class="docutils literal notranslate"><span class="pre">pd.Int64Dtype()</span></code> dtype instead of the numpy <code class="docutils literal notranslate"><span class="pre">int64</span></code>
+nullable <code class="docutils literal notranslate"><span class="pre">&quot;Int64&quot;</span></code> / <code class="docutils literal notranslate"><span class="pre">pd.Int64Dtype()</span></code> dtype instead of the numpy <code class="docutils literal notranslate"><span class="pre">int64</span></code>
 dtype (or <code class="docutils literal notranslate"><span class="pre">float64</span></code> in case of missing values)).</p></li>
 </ul>
 <p>However, up to this date, all other default data types still use <code class="docutils literal notranslate"><span class="pre">NaN</span></code> semantics
@@ -338,7 +338,7 @@ for missing values. Therefore, this proposal says that a new default string
 dtype should also still use the same default missing value semantics and return
 default data types when doing operations on the string column, to be consistent
 with the other default dtypes at this point.</p>
-<p>In practice, this means that the default <code class="docutils literal notranslate"><span class="pre">&quot;string&quot;</span></code> dtype will use <code class="docutils literal notranslate"><span class="pre">NaN</span></code> as
+<p>In practice, this means that the default string dtype will use <code class="docutils literal notranslate"><span class="pre">NaN</span></code> as
 the missing value sentinel, and:</p>
 <ul class="simple">
 <li><p>String columns will follow NaN-semantics for missing values, where <code class="docutils literal notranslate"><span class="pre">NaN</span></code> gives
@@ -349,9 +349,8 @@ the default data types (i.e. numpy <code class="docutils literal notranslate"><s
 <p>Because the original <code class="docutils literal notranslate"><span class="pre">StringDtype</span></code> implementations already use <code class="docutils literal notranslate"><span class="pre">pd.NA</span></code> and
 return masked integer and boolean arrays in operations, a new variant of the
 existing dtypes that uses <code class="docutils literal notranslate"><span class="pre">NaN</span></code> and default data types was needed. The original
-variant of <code class="docutils literal notranslate"><span class="pre">StringDtype</span></code> using <code class="docutils literal notranslate"><span class="pre">pd.NA</span></code> will still be available for those who
-want to keep using it (see below in the “Naming” subsection for how to specify
-this).</p>
+variant of <code class="docutils literal notranslate"><span class="pre">StringDtype</span></code> using <code class="docutils literal notranslate"><span class="pre">pd.NA</span></code> will continue to be available for those
+who were already using it.</p>
 </section>
 <section id="object-dtype-fallback-implementation">
 <h3>Object-dtype “fallback” implementation<a class="headerlink" href="#object-dtype-fallback-implementation" title="Link to this heading">#</a></h3>
@@ -367,25 +366,35 @@ using NumPy 2.0 (<a class="reference external" href="https://github.com/pandas-d
 or nanoarrow (<a class="reference external" href="https://github.com/pandas-dev/pandas/issues/58552">GH-58552</a>) can
 still be explored, but at that point that is an implementation detail that
 should not have a direct impact on users (except for performance).</p>
+<p>For the original variant of <code class="docutils literal notranslate"><span class="pre">StringDtype</span></code> using <code class="docutils literal notranslate"><span class="pre">pd.NA</span></code>, currently the default
+storage is <code class="docutils literal notranslate"><span class="pre">&quot;python&quot;</span></code> (the object-dtype based implementation). Also for this
+variant, it is proposed to follow the same logic for determining the default
+storage, i.e. default to <code class="docutils literal notranslate"><span class="pre">&quot;pyarrow&quot;</span></code> if available, and otherwise
+fall back to <code class="docutils literal notranslate"><span class="pre">&quot;python&quot;</span></code>.</p>
 </section>
 <section id="naming">
 <h3>Naming<a class="headerlink" href="#naming" title="Link to this heading">#</a></h3>
 <p>Given the long history of this topic, the naming of the dtypes is a difficult
 topic.</p>
 <p>In the first place, it should be acknowledged that most users should not need to
-use storage-specific options. Users are expected to specify <code class="docutils literal notranslate"><span class="pre">pd.StringDtype()</span></code>
-or <code class="docutils literal notranslate"><span class="pre">&quot;string&quot;</span></code>, and that will give them their default string dtype (which
-depends on whether PyArrow is installed or not).</p>
-<p>But for testing purposes and advanced use cases that want control over this, we
-need some way to specify this and distinguish them from the other string dtypes.
-In addition, users that want to continue using the original NA-variant of the
-dtype need a way to specify this.</p>
-<p>Currently (pandas 2.2), <code class="docutils literal notranslate"><span class="pre">StringDtype(storage=&quot;pyarrow_numpy&quot;)</span></code> is used, where
-the <code class="docutils literal notranslate"><span class="pre">&quot;pyarrow_numpy&quot;</span></code> storage was used to disambiguate from the existing
+use storage-specific options. Users are expected to specify a generic name (such
+as <code class="docutils literal notranslate"><span class="pre">&quot;str&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;string&quot;</span></code>), and that will give them their default string dtype
+(which depends on whether PyArrow is installed or not).</p>
+<p>For the generic string alias to specify the dtype, <code class="docutils literal notranslate"><span class="pre">&quot;string&quot;</span></code> is already used
+for the <code class="docutils literal notranslate"><span class="pre">StringDtype</span></code> using <code class="docutils literal notranslate"><span class="pre">pd.NA</span></code>. This PDEP proposes to use <code class="docutils literal notranslate"><span class="pre">&quot;str&quot;</span></code> for the
+new default <code class="docutils literal notranslate"><span class="pre">StringDtype</span></code> using <code class="docutils literal notranslate"><span class="pre">NaN</span></code>. This ensures backwards compatibility for
+code using <code class="docutils literal notranslate"><span class="pre">dtype=&quot;string&quot;</span></code>, and was also chosen because <code class="docutils literal notranslate"><span class="pre">dtype=&quot;str&quot;</span></code> or
+<code class="docutils literal notranslate"><span class="pre">dtype=str</span></code> currently already works to ensure your data is converted to
+strings (only using object dtype for the result).</p>
+<p>But for testing purposes and advanced use cases that want control over the exact
+variant of the <code class="docutils literal notranslate"><span class="pre">StringDtype</span></code>, we need some way to specify this and distinguish
+them from the other string dtypes.</p>
+<p>Currently (pandas 2.2), <code class="docutils literal notranslate"><span class="pre">StringDtype(storage=&quot;pyarrow_numpy&quot;)</span></code> is used for the new variant using <code class="docutils literal notranslate"><span class="pre">NaN</span></code>,
+where the <code class="docutils literal notranslate"><span class="pre">&quot;pyarrow_numpy&quot;</span></code> storage was used to disambiguate from the existing
 <code class="docutils literal notranslate"><span class="pre">&quot;pyarrow&quot;</span></code> option using <code class="docutils literal notranslate"><span class="pre">pd.NA</span></code>. However, <code class="docutils literal notranslate"><span class="pre">&quot;pyarrow_numpy&quot;</span></code> is a rather confusing
 option and doesn’t generalize well. Therefore, this PDEP proposes a new naming
-scheme as outlined below, and <code class="docutils literal notranslate"><span class="pre">&quot;pyarrow_numpy&quot;</span></code> will be deprecated and removed
-before pandas 3.0.</p>
+scheme as outlined below, and <code class="docutils literal notranslate"><span class="pre">&quot;pyarrow_numpy&quot;</span></code> will be deprecated as an alias
+in pandas 2.3 and removed in pandas 3.0.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">storage</span></code> keyword of <code class="docutils literal notranslate"><span class="pre">StringDtype</span></code> is kept to disambiguate the underlying
 storage of the string data (using pyarrow or python objects), but an additional
 <code class="docutils literal notranslate"><span class="pre">na_value</span></code> is introduced to disambiguate the the variants using NA semantics
@@ -403,60 +412,61 @@ dtype of the data:</p>
 <tbody>
 <tr class="row-even"><td><p>Unspecified (inference)</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">StringDtype(storage=&quot;pyarrow&quot;|&quot;python&quot;,</span> <span class="pre">na_value=np.nan)</span></code></p></td>
-<td><p>“string”</p></td>
+<td><p>“str”</p></td>
 <td><p>(1)</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">StringDtype()</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;string&quot;</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">StringDtype(storage=&quot;pyarrow&quot;</span> <span class="pre">|</span> <span class="pre">&quot;python&quot;,</span> <span class="pre">na_value=np.nan)</span></code></p></td>
-<td><p>“string”</p></td>
-<td><p>(1), (2)</p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;str&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">StringDtype(na_value=np.nan)</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">StringDtype(storage=&quot;pyarrow&quot;|&quot;python&quot;,</span> <span class="pre">na_value=np.nan)</span></code></p></td>
+<td><p>“str”</p></td>
+<td><p>(1)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">StringDtype(&quot;pyarrow&quot;,</span> <span class="pre">na_value=np.nan)</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">StringDtype(storage=&quot;pyarrow&quot;,</span> <span class="pre">na_value=np.nan)</span></code></p></td>
+<td><p>“str”</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">StringDtype(&quot;python&quot;,</span> <span class="pre">na_value=np.nan)</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">StringDtype(storage=&quot;python&quot;,</span> <span class="pre">na_value=np.nan)</span></code></p></td>
+<td><p>“str”</p></td>
+<td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">StringDtype(&quot;pyarrow&quot;)</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">StringDtype(storage=&quot;pyarrow&quot;,</span> <span class="pre">na_value=np.nan)</span></code></p></td>
-<td><p>“string”</p></td>
-<td><p>(2)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">StringDtype(storage=&quot;pyarrow&quot;,</span> <span class="pre">na_value=pd.NA)</span></code></p></td>
+<td><p>“string[pyarrow]”</p></td>
+<td><p></p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">StringDtype(&quot;python&quot;)</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">StringDtype(storage=&quot;python&quot;,</span> <span class="pre">na_value=np.nan)</span></code></p></td>
-<td><p>“string”</p></td>
-<td><p>(2)</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">StringDtype(&quot;pyarrow&quot;,</span> <span class="pre">na_value=pd.NA)</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">StringDtype(storage=&quot;pyarrow&quot;,</span> <span class="pre">na_value=pd.NA)</span></code></p></td>
-<td><p>“String[pyarrow]”</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">StringDtype(&quot;python&quot;,</span> <span class="pre">na_value=pd.NA)</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">StringDtype(storage=&quot;python&quot;,</span> <span class="pre">na_value=pd.NA)</span></code></p></td>
-<td><p>“String[python]”</p></td>
+<td><p>“string[python]”</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">StringDtype(na_value=pd.NA)</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;String&quot;</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">StringDtype(storage=&quot;pyarrow&quot;</span> <span class="pre">|</span> <span class="pre">&quot;python&quot;,</span> <span class="pre">na_value=pd.NA)</span></code></p></td>
-<td><p>“String[pyarrow]” or “String[python]”</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;string&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">StringDtype()</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">StringDtype(storage=&quot;pyarrow&quot;|&quot;python&quot;,</span> <span class="pre">na_value=pd.NA)</span></code></p></td>
+<td><p>“string[pyarrow]” or “string[python]”</p></td>
 <td><p>(1)</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">StringDtype(&quot;pyarrow_numpy&quot;)</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">StringDtype(storage=&quot;pyarrow&quot;,</span> <span class="pre">na_value=np.nan)</span></code></p></td>
 <td><p>“string[pyarrow_numpy]”</p></td>
-<td><p>(3)</p></td>
+<td><p>(2)</p></td>
 </tr>
 </tbody>
 </table>
 <p>Notes:</p>
 <ul class="simple">
 <li><p>(1) You get “pyarrow” or “python” depending on pyarrow being installed.</p></li>
-<li><p>(2) Those three rows are backwards incompatible (i.e. they work now but give
-the NA-variant), see the “Backward compatibility” section below.</p></li>
-<li><p>(3) “pyarrow_numpy” is kept temporarily because this is already in a released
-version, but we can deprecate it in 2.x and have it removed for 3.0.</p></li>
+<li><p>(2) “pyarrow_numpy” is kept temporarily because this is already in a released
+version, but it will be deprecated in 2.x and removed for 3.0.</p></li>
 </ul>
-<p>For the new default string dtype, only the <code class="docutils literal notranslate"><span class="pre">&quot;string&quot;</span></code> alias can be used to
-specify the dtype as a string, i.e. a way would not be provided to make the
+<p>For the new default string dtype, only the <code class="docutils literal notranslate"><span class="pre">&quot;str&quot;</span></code> alias can be used to
+specify the dtype as a string, i.e. pandas would not provide a way to make the
 underlying storage (pyarrow or python) explicit through the string alias. This
-string alias is only a convenience shortcut and for most users <code class="docutils literal notranslate"><span class="pre">&quot;string&quot;</span></code> is
+string alias is only a convenience shortcut and for most users <code class="docutils literal notranslate"><span class="pre">&quot;str&quot;</span></code> is
 sufficient (they don’t need to specify the storage), and the explicit
-<code class="docutils literal notranslate"><span class="pre">pd.StringDtype(...)</span></code> is still available for more fine-grained control.</p>
+<code class="docutils literal notranslate"><span class="pre">pd.StringDtype(storage=...,</span> <span class="pre">na_value=np.nan)</span></code> is still available for more
+fine-grained control.</p>
+<p>Also for the existing variant using <code class="docutils literal notranslate"><span class="pre">pd.NA</span></code>, specifying the storage through the
+string alias could be deprecated, but that is left for a separate decision.</p>
 </section>
 </section>
 <section id="alternatives">
@@ -474,17 +484,16 @@ to <code class="docutils literal notranslate"><span class="pre">pd.NA</span></co
 <p>However:</p>
 <ol class="arabic simple">
 <li><p>Delaying has a cost: it further postpones introducing a dedicated string
-dtype that has massive benefits for users, both in usability as (for the
+dtype that has significant benefits for users, both in usability as (for the
 part of the user base that has PyArrow installed) in performance.</p></li>
 <li><p>In case pandas eventually transitions to use <code class="docutils literal notranslate"><span class="pre">pd.NA</span></code> as the default missing value
-sentinel,  a migration path for <em>all</em> pandas data types will be needed, and thus
+sentinel, a migration path for <em>all</em> pandas data types will be needed, and thus
 the challenges around this will not be unique to the string dtype and
 therefore not a reason to delay this.</p></li>
 </ol>
-<p>Making this change now for 3.0 will benefit the majority of users, while coming
-at a cost for a part of the users who already started using the <code class="docutils literal notranslate"><span class="pre">&quot;string&quot;</span></code> or
-<code class="docutils literal notranslate"><span class="pre">pd.StringDtype()</span></code> dtype (they will have to update their code to continue to use
-the variant using <code class="docutils literal notranslate"><span class="pre">pd.NA</span></code>, see the “Backward compatibility” section below).</p>
+<p>Making this change now for 3.0 will benefit the majority of users, and the PDEP
+author believes this is worth the cost of the added complexity around “yet
+another dtype” (also for other data types we already have multiple variants).</p>
 </section>
 <section id="why-not-use-the-existing-stringdtype-with-pd-na">
 <h3>Why not use the existing StringDtype with <code class="docutils literal notranslate"><span class="pre">pd.NA</span></code>?<a class="headerlink" href="#why-not-use-the-existing-stringdtype-with-pd-na" title="Link to this heading">#</a></h3>
@@ -505,15 +514,24 @@ when explicitly opting into this.</p>
 </section>
 <section id="naming-alternatives">
 <h3>Naming alternatives<a class="headerlink" href="#naming-alternatives" title="Link to this heading">#</a></h3>
-<p>This PDEP now keeps the <code class="docutils literal notranslate"><span class="pre">pd.StringDtype</span></code> class constructor with the existing
-<code class="docutils literal notranslate"><span class="pre">storage</span></code> keyword and with an additional <code class="docutils literal notranslate"><span class="pre">na_value</span></code> keyword.</p>
+<p>An initial version of this PDEP proposed to use the <code class="docutils literal notranslate"><span class="pre">&quot;string&quot;</span></code> alias and the
+default <code class="docutils literal notranslate"><span class="pre">pd.StringDtype()</span></code> class constructor for the new default dtype.
+However, that caused a lot of discussion around backwards compatibility for
+existing users of <code class="docutils literal notranslate"><span class="pre">dtype=pd.StringDtype()</span></code> and <code class="docutils literal notranslate"><span class="pre">dtype=&quot;string&quot;</span></code>, that uses
+<code class="docutils literal notranslate"><span class="pre">pd.NA</span></code> to represent missing values.</p>
 <p>During the discussion, several alternatives have been brought up. Both
-alternative keyword names as using a different constructor. This PDEP opted to
-keep using the existing <code class="docutils literal notranslate"><span class="pre">pd.StringDtype()</span></code> for now to keep the changes as
+alternative keyword names as using a different constructor. In the end,
+this PDEP proposes to use a different string alias (<code class="docutils literal notranslate"><span class="pre">&quot;str&quot;</span></code>) but to keep
+using the existing <code class="docutils literal notranslate"><span class="pre">pd.StringDtype</span></code> (with the existing <code class="docutils literal notranslate"><span class="pre">storage</span></code> keyword but
+with an additional <code class="docutils literal notranslate"><span class="pre">na_value</span></code> keyword) for now to keep the changes as
 minimal as possible, leaving a larger overhaul of the dtype system (potentially
 including different constructor functions or namespace) for a future discussion.
 See <a class="reference external" href="https://github.com/pandas-dev/pandas/issues/58613">GH-58613</a> for the full
 discussion.</p>
+<p>One consequence is that when using the class constructor for the default dtype,
+it has to be used with non-default arguments, i.e. a user needs to specify
+<code class="docutils literal notranslate"><span class="pre">pd.StringDtype(na_value=np.nan)</span></code> to get the default dtype using <code class="docutils literal notranslate"><span class="pre">NaN</span></code>.
+Therefore, the pandas documentation will focus on the usage of <code class="docutils literal notranslate"><span class="pre">dtype=&quot;str&quot;</span></code>.</p>
 </section>
 </section>
 <section id="backward-compatibility">
@@ -532,52 +550,16 @@ backwards compatible on this aspect. When storing strings in object dtype, panda
 however did allow using <code class="docutils literal notranslate"><span class="pre">None</span></code> as the missing value indicator as well (and in
 certain cases such as the <code class="docutils literal notranslate"><span class="pre">shift</span></code> method, pandas even introduced this itself).
 For all the cases where currently <code class="docutils literal notranslate"><span class="pre">None</span></code> was used as the missing value sentinel,
-this will change to use <code class="docutils literal notranslate"><span class="pre">NaN</span></code> consistently.</p>
+this will change to consistently use <code class="docutils literal notranslate"><span class="pre">NaN</span></code>.</p>
 <section id="for-existing-users-of-stringdtype">
 <h3>For existing users of <code class="docutils literal notranslate"><span class="pre">StringDtype</span></code><a class="headerlink" href="#for-existing-users-of-stringdtype" title="Link to this heading">#</a></h3>
-<p>Users of the existing <code class="docutils literal notranslate"><span class="pre">StringDtype</span></code> will see more backwards incompatible
-changes, though. In pandas 3.0, calling <code class="docutils literal notranslate"><span class="pre">pd.StringDtype()</span></code> (or specifying
-<code class="docutils literal notranslate"><span class="pre">dtype=&quot;string&quot;</span></code>) will start returning the new default string dtype using <code class="docutils literal notranslate"><span class="pre">NaN</span></code>,
-while up to now this returned the string dtype using <code class="docutils literal notranslate"><span class="pre">pd.NA</span></code> introduced in
-pandas 1.0.</p>
-<p>For example, this code snippet returned the NA-variant of <code class="docutils literal notranslate"><span class="pre">StringDtype</span></code> with
-pandas 1.x and 2.x:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;string&quot;</span><span class="p">)</span>
-<span class="go">0      a</span>
-<span class="go">1      b</span>
-<span class="go">2   &lt;NA&gt;</span>
-<span class="go">dtype: string</span>
-</pre></div>
-</div>
-<p>but will start returning the new default NaN-variant of <code class="docutils literal notranslate"><span class="pre">StringDtype</span></code> with
-pandas 3.0. This means that the missing value sentinel will change from <code class="docutils literal notranslate"><span class="pre">pd.NA</span></code>
-to <code class="docutils literal notranslate"><span class="pre">NaN</span></code>, and that operations will no longer return nullable dtypes but default
-numpy dtypes (see the “Missing value semantics” section above).</p>
-<p>While this change will be transparent in many cases (e.g. checking for missing
-values with <code class="docutils literal notranslate"><span class="pre">isna()</span></code>/<code class="docutils literal notranslate"><span class="pre">dropna()</span></code>/<code class="docutils literal notranslate"><span class="pre">fillna()</span></code> or filtering rows with the result of
-a string predicate method keeps working regardless of the sentinel), this can be
-a breaking change if users relied on the exact sentinel or resulting dtype. Since
-pandas 1.0, the string dtype has been promoted quite a bit, and so we expect
-that many users already have started using this dtype, even though officially
-still labeled as “experimental”.</p>
-<p>To smooth the upgrade experience for those users, it is proposed to add a
-deprecation warning before 3.0 when such dtype is created, giving them two
-options:</p>
-<ul class="simple">
-<li><p>If the user just wants to have a dedicated “string” dtype (or the better
-performance when using pyarrow) but is fine with using the default NaN
-semantics, they can add <code class="docutils literal notranslate"><span class="pre">pd.options.future.infer_string</span> <span class="pre">=</span> <span class="pre">True</span></code> to their code
-to suppress the warning and already opt-in to the future behaviour of pandas
-3.0.</p></li>
-<li><p>If the user specifically wants the variant of the string dtype that uses
-<code class="docutils literal notranslate"><span class="pre">pd.NA</span></code> (and returns nullable numeric/boolean dtypes in operations), they will
-have to update their dtype specification from <code class="docutils literal notranslate"><span class="pre">&quot;string&quot;</span></code> / <code class="docutils literal notranslate"><span class="pre">pd.StringDtype()</span></code>
-to <code class="docutils literal notranslate"><span class="pre">&quot;String&quot;</span></code> / <code class="docutils literal notranslate"><span class="pre">pd.StringDtype(na_value=pd.NA)</span></code> to suppress the warning and
-further keep their code running as is.</p></li>
-</ul>
-<p>A <code class="docutils literal notranslate"><span class="pre">&quot;String&quot;</span></code> alias (capitalized) would be added to make it easier for users to
-continue using the variant using <code class="docutils literal notranslate"><span class="pre">pd.NA</span></code>, and such capitalized string alias is
-consistent with other nullable dtypes (<code class="docutils literal notranslate"><span class="pre">&quot;float64</span></code>” vs <code class="docutils literal notranslate"><span class="pre">&quot;Float64&quot;</span></code>).</p>
+<p>Existing code that already opted in to use the <code class="docutils literal notranslate"><span class="pre">StringDtype</span></code> using <code class="docutils literal notranslate"><span class="pre">pd.NA</span></code>
+should generally keep working as is. The latest version of this PDEP preserves
+the behaviour of <code class="docutils literal notranslate"><span class="pre">dtype=&quot;string&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">dtype=pd.StringDtype()</span></code> to mean the
+<code class="docutils literal notranslate"><span class="pre">pd.NA</span></code> variant of the dtype.</p>
+<p>It does propose the change the default storage to <code class="docutils literal notranslate"><span class="pre">&quot;pyarrow&quot;</span></code> (if available) for
+the opt-in <code class="docutils literal notranslate"><span class="pre">pd.NA</span></code> variant as well, but this should have limited, if any,
+user-visible impact.</p>
 </section>
 </section>
 <section id="timeline">
@@ -587,16 +569,13 @@ flag in pandas 2.1 (enabled by <code class="docutils literal notranslate"><span 
 <p>The variant using numpy object-dtype can also be backported to the 2.2.x branch
 to allow easier testing. It is proposed to release this as 2.3.0 (created from
 the 2.2.x branch, given that the main branch already includes many other changes
-targeted for 3.0), together with the deprecation warning when creating a dtype
-from <code class="docutils literal notranslate"><span class="pre">&quot;string&quot;</span></code> / <code class="docutils literal notranslate"><span class="pre">pd.StringDtype()</span></code>.</p>
+targeted for 3.0), together with the changes to the naming scheme.</p>
 <p>The 2.3.0 release would then have all future string functionality available
-(both the pyarrow and object-dtype based variants of the default string dtype),
-and warn existing users of the <code class="docutils literal notranslate"><span class="pre">StringDtype</span></code> in advance of 3.0 about how to
-update their code.</p>
+(both the pyarrow and object-dtype based variants of the default string dtype).</p>
 <p>For pandas 3.0, this <code class="docutils literal notranslate"><span class="pre">future.infer_string</span></code> flag becomes enabled by default.</p>
 </section>
-<section id="pdep-xx-history">
-<h2>PDEP-XX History<a class="headerlink" href="#pdep-xx-history" title="Link to this heading">#</a></h2>
+<section id="pdep-14-history">
+<h2>PDEP-14 History<a class="headerlink" href="#pdep-14-history" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p>3 May 2024: Initial version</p></li>
 </ul>
@@ -649,7 +628,7 @@ update their code.</p>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#timeline">Timeline</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pdep-xx-history">PDEP-XX History</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pdep-14-history">PDEP-14 History</a></li>
 </ul>
   </nav></div>
 
